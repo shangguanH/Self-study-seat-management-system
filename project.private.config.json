@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "projectname": "study-room-wx",
+=======
+  "projectname": "Self-study-seat-management-system",
+>>>>>>> 480f653 (first connect)
   "setting": {
     "compileHotReLoad": true,
     "urlCheck": false
@@ -115,5 +119,10 @@
         }
       ]
     }
+<<<<<<< HEAD
   }
+=======
+  },
+  "libVersion": "2.19.4"
+>>>>>>> 480f653 (first connect)
 }

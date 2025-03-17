@@ -1,0 +1,35 @@
+<view class="container">
+  <!-- 标题 -->
+  <view class="title">
+    <text>自习室预约系统</text>
+  </view>
+
+  <!-- 用户身份选择 -->
+  <view class="identity-selector">
+    <radio-group class="identity-options">
+      <label>
+        <radio value="student" checked /> 学生
+      </label>
+      <label>
+        <radio value="admin" /> 管理员
+      </label>
+    </radio-group>
+  </view>
+
+  <!-- 学工号输入框 -->
+  <view class="input-group">
+    <text>学工号：</text>
+    <input class="input-field" type="text" placeholder="请输入学工号" bindinput="onInputStudentId" />
+  </view>
+
+  <!-- 密码输入框 -->
+  <view class="input-group">
+    <text>密码：</text>
+    <input class="input-field" type="password" placeholder="请输入密码" bindinput="onInputPassword" />
+  </view>
+
+  <!-- 登录按钮 -->
+  <view class="login-btn">
+    <button bindtap="onLogin">登录</button>
+  </view>
+</view>

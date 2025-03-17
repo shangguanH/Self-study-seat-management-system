@@ -1,0 +1,66 @@
+/* index.wxss */
+
+/* 整体容器 */
+.container {
+  padding: 30px;
+  background-color: #f5f5f5; /* 背景颜色 */
+  height: 100vh; /* 设置高度占满屏幕 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 标题样式 */
+.title-text {
+  font-size: 30px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* 欢迎信息 */
+.welcome-message {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.welcome-text {
+  font-size: 20px;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.sub-text {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* 按钮容器 */
+.button-container {
+  margin-top: 30px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* 立即预约按钮样式 */
+.btn {
+  background-color: #007aff;
+  color: white;
+  padding: 12px 25px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 30px; /* 圆角按钮 */
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3); /* 添加阴影效果 */
+  transition: all 0.3s ease; /* 添加过渡效果 */
+}
+
+.btn:hover {
+  background-color: #005bb5; /* 按钮 hover 时的颜色 */
+  box-shadow: 0 6px 12px rgba(0, 122, 255, 0.4);
+}

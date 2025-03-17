@@ -1,0 +1,35 @@
+/* application/index.wxss */
+.container {
+  padding: 20px;
+}
+
+.filters {
+  margin-bottom: 20px;
+}
+
+.filter-item {
+  margin-bottom: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.room-list {
+  margin-top: 20px;
+}
+
+.room-item {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+}
+
+.room-item text {
+  display: block;
+  margin-top: 5px;
+}

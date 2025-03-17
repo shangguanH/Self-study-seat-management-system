@@ -1,0 +1,33 @@
+<!-- application/index.wxml -->
+<view class="container">
+  <!-- 筛选条件部分 -->
+  <view class="filters">
+    <view class="filter-item">
+      <text>可用座位数：</text>
+      <input type="number" placeholder="请输入最小座位数" bindinput="onSeatCountChange" value="{{minSeatCount}}" />
+    </view>
+
+    <view class="filter-item">
+      <checkbox-group bindchange="onAmenitiesChange">
+        <label>
+          <checkbox value="charging" checked="{{isCharging}}" /> 带充电插座
+        </label>
+        <label>
+          <checkbox value="quiet" checked="{{isQuiet}}" /> 安静学习区
+        </label>
+      </checkbox-group>
+    </view>
+  </view>
+
+  <!-- 自习室列表 -->
+  <view class="room-list">
+    <block wx:for="{{filteredRooms}}" wx:key="index">
+      <view class="room-item">
+        <text>自习室：{{item.name}}</text>
+        <text>座位数：{{item.availableSeats}} / {{item.totalSeats}}</text>
+        <text>{{item.hasCharging ? '带充电插座' : '不带充电插座'}}</text>
+        <text>{{item.isQuiet ? '安静学习区' : '非安静区'}}</text>
+      </view>
+    </block>
+  </view>
+</view>

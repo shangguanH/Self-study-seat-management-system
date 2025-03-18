@@ -4,7 +4,8 @@
     "pages/login/index",
     "pages/application/index",
     "pages/backstage/index",
-    "pages/my/index"
+    "pages/my/index" ,
+    "pages/register/index"
     
   ],
   "window": {

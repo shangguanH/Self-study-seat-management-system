@@ -123,6 +123,10 @@
   }
 =======
   },
+<<<<<<< HEAD
   "libVersion": "2.19.4"
 >>>>>>> 480f653 (first connect)
+=======
+  "libVersion": "3.3.5"
+>>>>>>> d94d847 (增加了注册和request请求，还未用mock进行测试)
 }

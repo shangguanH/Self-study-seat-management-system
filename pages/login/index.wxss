@@ -39,3 +39,23 @@ button {
   border: none;
   border-radius: 5px;
 }
+
+/* 注册按钮样式 */
+.register-btn {
+  margin-top: 20px; /* 与登录按钮的间距 */
+  text-align: center; /* 按钮居中 */
+}
+
+.register-btn button {
+  background-color: #4CAF50; /* 绿色背景 */
+  color: white; /* 白色文字 */
+  padding: 10px 20px; /* 内边距 */
+  border: none; /* 无边框 */
+  border-radius: 5px; /* 圆角 */
+  font-size: 16px; /* 字体大小 */
+  cursor: pointer; /* 鼠标悬停时显示手型 */
+}
+
+.register-btn button:hover {
+  background-color: #45a049; /* 鼠标悬停时的背景颜色 */
+}

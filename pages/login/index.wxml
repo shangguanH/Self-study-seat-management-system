@@ -32,4 +32,9 @@
   <view class="login-btn">
     <button bindtap="onLogin">登录</button>
   </view>
+
+  <!-- 注册按钮 -->
+  <view class="register-btn">
+    <button bindtap="onRegister">注册</button>
+  </view>
 </view>

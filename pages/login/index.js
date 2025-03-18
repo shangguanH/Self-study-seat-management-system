@@ -18,7 +18,6 @@ Page({
       password: e.detail.value
     });
   },
-
   // 处理登录
   onLogin: function () {
     const { studentId, password, identity } = this.data;
@@ -50,5 +49,15 @@ Page({
     wx.switchTab({
       url: '/pages/application/index',
     });
+  },
+  // 3/14
+  onRegister: function() {
+    // 注册逻辑
+    console.log("注册按钮被点击");
+    // 可以跳转到注册页面
+    wx.navigateTo({
+      url: '/pages/register/index',
+    });
   }
 });
+

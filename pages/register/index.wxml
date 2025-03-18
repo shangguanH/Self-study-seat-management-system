@@ -1,0 +1,48 @@
+<view class="container">
+  <!-- 标题 -->
+  <view class="title">
+    <text>用户注册</text>
+  </view>
+
+  <!-- 用户身份选择 -->
+  <view class="identity-selector">
+    <text>选择身份：</text>
+    <radio-group class="identity-options" bindchange="onIdentityChange">
+      <label class="radio-label">
+        <radio value="student" checked /> 学生
+      </label>
+      <label class="radio-label">
+        <radio value="admin" /> 管理员
+      </label>
+    </radio-group>
+  </view>
+
+  <!-- 用户名输入框 -->
+  <view class="input-group">
+    <text>用户名：</text>
+    <input class="input-field" type="text" placeholder="请输入用户名" bindinput="onInputUsername" />
+  </view>
+
+  <!-- 密码输入框 -->
+  <view class="input-group">
+    <text>密码：</text>
+    <input class="input-field" type="password" placeholder="请输入密码" bindinput="onInputPassword" />
+  </view>
+
+  <!-- 邮箱输入框 -->
+  <view class="input-group">
+    <text>邮箱：</text>
+    <input class="input-field" type="text" placeholder="请输入邮箱" bindinput="onInputEmail" />
+  </view>
+
+  <!-- 手机号输入框 -->
+  <view class="input-group">
+    <text>手机号：</text>
+    <input class="input-field" type="number" placeholder="请输入手机号" bindinput="onInputPhone" />
+  </view>
+
+  <!-- 注册按钮 -->
+  <view class="register-btn">
+    <button bindtap="onRegister">注册</button>
+  </view>
+</view>

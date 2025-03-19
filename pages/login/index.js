@@ -46,7 +46,7 @@ Page({
     });
     console.log('准备跳转到 application/index');
     // 登录成功后跳转到相应页面
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/application/index',
     });
   },

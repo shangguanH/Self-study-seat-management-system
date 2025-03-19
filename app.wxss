@@ -1,32 +1,10 @@
-page {
+/**app.wxss**/
+.container {
   height: 100%;
-}
-/* tab页面 */
-.outermost-layer-tab {
-  background: #F6F6F6;
-  height: 90%;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 200rpx 0;
+  box-sizing: border-box;
 } 
-.centered {
-  padding: 0 20rpx 0 20rpx;
-}
-/* 标题样式 */
-.pt-page-title {
-  position: relative;
-  height: 80rpx;
-  line-height: 95rpx;
-  font-size: 35rpx;
-  color: #333333;
-  font-weight: 700;
-}
-.pt-page-title ::before {
-  display: inline-block;
-  position: relative;
-  top: 5.6rpx;
-  left: -1rpx;
-  content: "";
-  padding: 0 4rpx;
-  height: 33rpx;
-  border-radius: 10rpx;
-  background: #1C8FFA;
-}

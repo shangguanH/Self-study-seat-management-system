@@ -1,0 +1,49 @@
+<!-- 自习室详情页面 -->
+<view class="container">
+  <!-- 自习室信息栏 -->
+  <view class="room-info">
+    <view class="room-name">{{roomName}}</view>
+    <view class="room-stats">
+      <text>总座位: {{totalSeats}}</text>
+      <text>空闲: {{availableSeats}}</text>
+      <text wx:if="{{hasCharging}}" class="feature">有插座</text>
+      <text wx:if="{{isQuiet}}" class="feature">安静区</text>
+    </view>
+  </view>
+  
+  <!-- 座位图图例 -->
+  <view class="seat-legend">
+    <view class="legend-item">
+      <view class="legend-icon seat-available"></view>
+      <text>空闲</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-icon seat-reserved"></view>
+      <text>已预约</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-icon seat-user-reserved"></view>
+      <text>我的预约</text>
+    </view>
+  </view>
+  
+  <!-- 座位布局图 -->
+  <view class="seat-layout">
+    <view class="row" wx:for="{{seats}}" wx:for-item="row" wx:for-index="rowIndex" wx:key="rowIndex">
+      <view class="seat {{getSeatClass(item.status)}}" 
+            wx:for="{{row}}" 
+            wx:key="colIndex"
+            data-row="{{item.row}}" 
+            data-col="{{item.col}}" 
+            bindtap="seatTap">
+        <text wx:if="{{getSeatIcon(item.status)}}" class="seat-icon">{{getSeatIcon(item.status)}}</text>
+        <text class="seat-label">{{rowIndex+1}}-{{index+1}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button bindtap="viewReservedSeats">查看我的预约</button>
+  </view>
+</view>

@@ -17,7 +17,9 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "urlCheck": true,
+    "packNpmManually": false
   },
   "condition": {},
   "editorSetting": {

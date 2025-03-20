@@ -1,9 +1,7 @@
-/* index.wxss */
-
 /* 整体容器 */
 .container {
   padding: 30px;
-  background-color: #f5f5f5; /* 背景颜色 */
+  background-color: #f0f4f8; /* 更柔和的背景颜色 */
   height: 100vh; /* 设置高度占满屏幕 */
   display: flex;
   flex-direction: column;
@@ -13,9 +11,9 @@
 
 /* 标题样式 */
 .title-text {
-  font-size: 30px;
+  font-size: 36px; /* 增大字体大小 */
   font-weight: bold;
-  color: #333;
+  color: #1e3a5f; /* 深蓝色字体 */
   margin-bottom: 20px;
   text-align: center;
 }
@@ -27,15 +25,15 @@
 }
 
 .welcome-text {
-  font-size: 20px;
-  color: #444;
+  font-size: 22px; /* 增大字体大小 */
+  color: #333; /* 深灰色字体 */
   line-height: 1.4;
   margin-bottom: 10px;
 }
 
 .sub-text {
-  font-size: 14px;
-  color: #888;
+  font-size: 16px; /* 增大字体大小 */
+  color: #666; /* 中灰色字体 */
   line-height: 1.5;
 }
 
@@ -49,18 +47,18 @@
 
 /* 立即预约按钮样式 */
 .btn {
-  background-color: #007aff;
+  background-color: #4a90e2; /* 更柔和的蓝色 */
   color: white;
-  padding: 12px 25px;
-  font-size: 18px;
+  padding: 15px 30px; /* 增大按钮内边距 */
+  font-size: 20px; /* 增大字体大小 */
   font-weight: bold;
-  border-radius: 30px; /* 圆角按钮 */
+  border-radius: 35px; /* 更大的圆角 */
   border: none;
-  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3); /* 添加阴影效果 */
+  box-shadow: 0 6px 12px rgba(74, 144, 226, 0.4); /* 更明显的阴影效果 */
   transition: all 0.3s ease; /* 添加过渡效果 */
 }
 
 .btn:hover {
-  background-color: #005bb5; /* 按钮 hover 时的颜色 */
-  box-shadow: 0 6px 12px rgba(0, 122, 255, 0.4);
+  background-color: #357ab8; /* 按钮 hover 时的颜色 */
+  box-shadow: 0 8px 16px rgba(74, 144, 226, 0.5);
 }

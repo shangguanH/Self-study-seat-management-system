@@ -1,13 +1,12 @@
 <view class="container">
   <!-- 标题 -->
   <view class="title">
-    <text class="title-text">自习室预约系统</text>
+    <text class="title-text">自习座位预约系统</text>
   </view>
 
   <!-- 欢迎信息 -->
   <view class="welcome-message">
-    <text class="welcome-text">欢迎使用我们的自习室预约系统！</text>
-    <text class="sub-text">让您的学习更高效，赶快预约一个安静的学习空间吧！</text>
+    <text class="welcome-text">轻松预约，高效学习</text>
   </view>
 
   <!-- 预约按钮 -->

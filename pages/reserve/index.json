@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "自习室预约"
+  "navigationBarTitleText": "自习室预约",
+  "enablePullDownRefresh": false
 }

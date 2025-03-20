@@ -4,11 +4,11 @@ Page({
     isCharging: false, // 是否带充电插座
     isQuiet: false, // 是否为安静学习区
     rooms: [ // 假设的自习室数据
-      { name: '自习室A', availableSeats: 5, totalSeats: 10, hasCharging: true, isQuiet: true },
-      { name: '自习室B', availableSeats: 0, totalSeats: 10, hasCharging: false, isQuiet: false },
-      { name: '自习室C', availableSeats: 8, totalSeats: 10, hasCharging: true, isQuiet: true },
-      { name: '自习室D', availableSeats: 2, totalSeats: 10, hasCharging: false, isQuiet: true },
-      { name: '自习室E', availableSeats: 3, totalSeats: 10, hasCharging: true, isQuiet: false },
+      { name: '自习室A', availableSeats: 10, totalSeats: 10, hasCharging: true, isQuiet: true },
+      { name: '自习室B', availableSeats: 10, totalSeats: 10, hasCharging: false, isQuiet: false },
+      { name: '自习室C', availableSeats: 10, totalSeats: 10, hasCharging: true, isQuiet: true },
+      { name: '自习室D', availableSeats: 10, totalSeats: 10, hasCharging: false, isQuiet: true },
+      { name: '自习室E', availableSeats: 10, totalSeats: 10, hasCharging: true, isQuiet: false },
     ],
     filteredRooms: [], // 筛选后的自习室列表
   },

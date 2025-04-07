@@ -1,62 +1,109 @@
-/**index.wxss**/
-page {
-  height: 100vh;
+/* 页面容器样式 */
+.container {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background-color: #f9f9f9;
 }
-.scrollarea {
+
+/* 内容部分 */
+.content {
   flex: 1;
-  overflow-y: hidden;
-}
-
-.userinfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #aaa;
-  width: 80%;
-}
-
-.userinfo-avatar {
-  overflow: hidden;
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
-}
-
-.usermotto {
-  margin-top: 200px;
-}
-
-.avatar-wrapper {
-  padding: 0;
-  width: 56px !important;
+  padding: 20px;
+  background-color: #ffffff;
   border-radius: 8px;
-  margin-top: 40px;
-  margin-bottom: 40px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
-.avatar {
-  display: block;
-  width: 56px;
-  height: 56px;
+/* 页面标题 */
+.header {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.nickname-wrapper {
-  display: flex;
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 当前预约状态信息框 */
+.appointment-status {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.status-title {
+  font-size: 16px;
+  color: #007aff;
+  font-weight: bold;
+}
+
+.status-text {
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* 预约按钮样式 */
+.reserve-btn {
   width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  border-top: .5px solid rgba(0, 0, 0, 0.1);
-  border-bottom: .5px solid rgba(0, 0, 0, 0.1);
-  color: black;
+  height: 48px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-size: 18px;
+  margin-top: 30px;
 }
 
-.nickname-label {
-  width: 105px;
+/* 签到按钮样式 */
+.sign-in-btn {
+  width: 100%;
+  height: 48px;
+  background-color: #34c759;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-size: 18px;
+  margin-top: 20px;
 }
 
-.nickname-input {
-  flex: 1;
+/* 预约说明 */
+.reserve-info {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+}
+
+/* 底部导航栏 */
+.nav-bar {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;  /* Ensure the navbar spans the full width of the screen */
+  padding: 10px 0;  /* Adjust the padding to ensure it's not too wide */
+  background-color: #2d8cf0;
+  border-radius: 10px 10px 0 0;  /* Rounded corners on top, not the bottom */
+  position: fixed;  /* Keep it at the bottom of the screen */
+  bottom: 0;
+  left: 0;
+}
+
+.nav-item {
+  font-size: 16px;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+
+.nav-item:hover {
+  background-color: #1a6db3;
+  transition: background-color 0.3s;
 }

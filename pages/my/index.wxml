@@ -1,2 +1,28 @@
-<!--pages/my/index.wxml-->
-<text>pages/my/index.wxml</text>
+<view class="container">
+  <!-- 用户信息区域 -->
+  <view class="user-info">
+    <text class="info-title">学工号:</text>
+    <text class="info-content">{{studentId}}</text>
+
+    <view class="info-row">
+      <text class="info-title">用户名:</text>
+      <text class="info-content">{{userInfo.username}}</text>
+    </view>
+
+    <view class="info-row">
+      <text class="info-title">邮箱:</text>
+      <text class="info-content">{{userInfo.email}}</text>
+    </view>
+
+    <view class="info-row">
+      <text class="info-title">手机号:</text>
+      <text class="info-content">{{userInfo.phone}}</text>
+    </view>
+  </view>
+
+  <!-- 底部导航栏 -->
+  <view class="nav-bar">
+    <navigator class="nav-item" url="/pages/index/index?studentId={{studentId}}">首页</navigator>
+    <navigator class="nav-item" url="/pages/my/index?studentId={{studentId}}">我的</navigator>
+  </view>
+</view>

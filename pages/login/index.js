@@ -44,10 +44,10 @@ Page({
       title: '登录成功',
       icon: 'success'
     });
-    console.log('准备跳转到 application/index');
+    console.log('准备跳转到 index/index');
     // 登录成功后跳转到相应页面
     wx.navigateTo({
-      url: '/pages/application/index',
+      url: '/pages/index/index?studentId=${studentId}',
     });
   },
   // 3/14

@@ -62,7 +62,7 @@ Page({
 
     // 发送 POST 请求到服务器
     wx.request({
-      url: 'https://api-domain.com/api/student/register', // API 域名
+      url: 'http://127.0.0.1:4523/m1/6047364-5737349-default/api/v1.0/student/register', // API 域名
       method: 'POST',
       data: registerData,
       header: {

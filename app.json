@@ -6,7 +6,8 @@
     "pages/application/index",
     "pages/reserve/index",
     "pages/index/index",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/my/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

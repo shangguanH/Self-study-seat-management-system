@@ -1,27 +1,32 @@
-<!--index.wxml-->
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
-        </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
+<view class="container">
+  <!-- 页面内容部分 -->
+  <view class="content">
+    <view class="header">
+      <text class="title">欢迎使用预约系统！</text>
     </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+
+    <!-- 显示当前预约状态 -->
+    <view class="appointment-status">
+      <text class="status-title">当前预约状态:</text>
+      <text class="status-text" wx:if="{{hasReservation}}">已有预约，请点击下方签到按钮进行签到。</text>
+      <text class="status-text" wx:else>未预约</text>
     </view>
+
+    <!-- 预约按钮 -->
+    <button class="reserve-btn" bindtap="onReserveClick">立即预约</button>
+
+    <!-- 预约说明 -->
+    <view class="reserve-info">
+      <text>tips: 使用座位需提前预约, 到场后请及时签到。</text>
+    </view>
+
+    <!-- 签到按钮（仅在已有预约时显示） -->
+    <button class="sign-in-btn" wx:if="{{hasReservation}}" bindtap="onSignInClick">签到</button>
   </view>
-</scroll-view>
+
+  <!-- 底部导航栏 -->
+  <view class="nav-bar">
+    <navigator class="nav-item" url="/pages/index/index">首页</navigator>
+    <navigator class="nav-item" url="/pages/my/index">我的</navigator>
+  </view>
+</view>

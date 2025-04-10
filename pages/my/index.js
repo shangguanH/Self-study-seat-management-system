@@ -1,66 +1,34 @@
-// pages/my/index.js
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    studentId: '',  // 学工号
+    userInfo: {
+      username: '',
+      email: '',
+      phone: ''
+    }
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
+  // 页面加载时获取学工号
+  onLoad: function(options) {
+    const studentId = options.studentId;  // 从 URL 中获取学工号
+    this.setData({
+      studentId: studentId
+    });
 
+    // 模拟从后端获取用户信息（可以根据实际需求替换为接口请求）
+    this.getUserInfo(studentId);
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  // 获取用户信息（模拟）
+  getUserInfo: function(studentId) {
+    // 模拟的用户数据，可以根据学工号获取用户信息
+    const userInfo = {
+      username: `用户${studentId}`,
+      email: `${studentId}@example.com`,
+      phone: `1380000${studentId}`
+    };
+    this.setData({
+      userInfo: userInfo
+    });
   }
-})
+});

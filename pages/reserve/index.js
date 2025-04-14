@@ -14,12 +14,23 @@ Page({
   onLoad: function(options) {
     // 从参数中获取自习室信息
     const { roomName, totalSeats, availableSeats, hasCharging, isQuiet } = options;
-    
+
     // 初始化座位数组（默认每个座位都可以预约）
     const seats = Array.from({ length: totalSeats }, (_, index) => ({
       id: index,
       status: 'available', // 'available', 'reserved', 'userReserved'
     }));
+
+    // 获取是否已有预约
+    const hasReservation = wx.getStorageSync('hasReservation') || false;
+
+    // 如果有预约，标记为已预约座位
+    if (hasReservation) {
+      const userSeatIndex = wx.getStorageSync('userSeatIndex');
+      if (userSeatIndex !== undefined) {
+        seats[userSeatIndex].status = 'userReserved'; // 设置用户已预约的座位状态
+      }
+    }
 
     this.setData({
       roomName,
@@ -28,6 +39,7 @@ Page({
       hasCharging: hasCharging === 'true',
       isQuiet: isQuiet === 'true',
       seats: seats,
+      userSeatIndex: hasReservation ? userSeatIndex : null,
     });
   },
 
@@ -35,20 +47,27 @@ Page({
   onSeatClick: function(e) {
     const seatIndex = e.currentTarget.dataset.index;
     const seat = this.data.seats[seatIndex];
-    const { userSeatIndex } = this.data;
+    const { userSeatIndex, hasReservation } = this.data;
+
+    if (hasReservation) {
+      // 如果用户已有预约，不能再预约其他座位
+      wx.showToast({
+        title: '你已经预约了座位，不能再次预约',
+        icon: 'none',
+        duration: 2000,
+      });
+      return;
+    }
 
     if (seat.status === 'available') {
       // 如果没有预约座位，则可以预约
       if (userSeatIndex === null) {
-        console.log(seatIndex);
-        console.log(userSeatIndex);
         this.setData({
           showModal: true,
           modalMessage: `是否预约座位 ${seatIndex + 1}?`,
           userSeatIndex: seatIndex,
         });
       } else {
-        console.log(1);
         // 如果已经预约了座位，弹出提示
         this.setData({
           showModal: true,
@@ -82,8 +101,16 @@ Page({
 
     if (newSeats[userSeatIndex].status === 'available') {
       newSeats[userSeatIndex].status = 'userReserved';
+
+      // 设置预约状态到本地存储
+      wx.setStorageSync('hasReservation', true);
+      wx.setStorageSync('userSeatIndex', userSeatIndex);
     } else if (newSeats[userSeatIndex].status === 'userReserved') {
       newSeats[userSeatIndex].status = 'available';
+
+      // 取消预约时，更新本地存储
+      wx.setStorageSync('hasReservation', false);
+      wx.removeStorageSync('userSeatIndex');
     }
 
     this.setData({

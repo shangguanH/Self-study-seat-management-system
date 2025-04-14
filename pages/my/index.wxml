@@ -18,6 +18,10 @@
       <text class="info-title">手机号:</text>
       <text class="info-content">{{userInfo.phone}}</text>
     </view>
+    <view>
+  <!-- 其他内容 -->
+  <button bindtap="logout">退出登录</button>
+</view>
   </view>
 
   <!-- 底部导航栏 -->
@@ -26,3 +30,4 @@
     <navigator class="nav-item" url="/pages/my/index?studentId={{studentId}}">我的</navigator>
   </view>
 </view>
+

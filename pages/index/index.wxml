@@ -8,20 +8,28 @@
     <!-- 显示当前预约状态 -->
     <view class="appointment-status">
       <text class="status-title">当前预约状态:</text>
-      <text class="status-text" wx:if="{{hasReservation}}">已有预约，请点击下方签到按钮进行签到。</text>
+      <text class="status-text" wx:if="{{hasReservation && !isSignedIn}}">已有预约，请点击下方签到按钮进行签到。</text>
+      <text class="status-text" wx:if="{{hasReservation && isSignedIn && !isTemporarilyAway}}">已签到，请选择操作。</text>
+      <text class="status-text" wx:if="{{hasReservation && isSignedIn && isTemporarilyAway}}">暂离中，剩余时间: {{remainingTime}}分钟</text>
       <text class="status-text" wx:else>未预约</text>
     </view>
 
     <!-- 预约按钮 -->
-    <button class="reserve-btn" bindtap="onReserveClick">立即预约</button>
-
-    <!-- 预约说明 -->
-    <view class="reserve-info">
-      <text>tips: 使用座位需提前预约, 到场后请及时签到。</text>
-    </view>
+    <button class="reserve-btn" wx:if="{{!hasReservation}}" bindtap="onReserveClick">立即预约</button>
 
     <!-- 签到按钮（仅在已有预约时显示） -->
-    <button class="sign-in-btn" wx:if="{{hasReservation}}" bindtap="onSignInClick">签到</button>
+    <button class="sign-in-btn" wx:if="{{hasReservation && !isSignedIn}}" bindtap="onSignInClick">签到</button>
+
+    <!-- 暂离按钮（仅在已签到时显示） -->
+    <button class="temporary-leave-btn" wx:if="{{hasReservation && isSignedIn}}" bindtap="onTemporaryLeaveClick">
+      {{isTemporarilyAway ? '恢复在座 (' + remainingTime + '分钟)' : '暂离'}}
+    </button>
+
+    <!-- 释放座位按钮（仅在已签到时显示） -->
+    <button class="release-seat-btn" wx:if="{{hasReservation && isSignedIn}}" bindtap="onReleaseSeatClick">释放座位</button>
+
+    <!-- 查看历史预约按钮 -->
+    <button bindtap="onViewHistoryClick" class="story-btn">查看历史预约</button>
   </view>
 
   <!-- 底部导航栏 -->

@@ -1,28 +1,35 @@
 Page({
   data: {
     identity: 'student',  // 默认选择学生
-    studentId: '',
-    password: ''
+    username: '',         // 学工号
+    password: ''          // 密码
   },
 
   // 处理学工号输入
   onInputStudentId: function (e) {
     this.setData({
-      studentId: e.detail.value
+      username: e.detail.value // 更新 username 字段
     });
   },
 
   // 处理密码输入
   onInputPassword: function (e) {
     this.setData({
-      password: e.detail.value
+      password: e.detail.value // 更新 password 字段
     });
   },
+
+  onIdentityChange: function (e) {
+    this.setData({
+      identity: e.detail.value // 更新 identity 字段
+    });
+  },
+  
   // 处理登录
   onLogin: function () {
-    const { studentId, password, identity } = this.data;
+    const { username, password, identity } = this.data;
 
-    if (!studentId || !password) {
+    if (!username || !password) {
       wx.showToast({
         title: '请填写学工号和密码',
         icon: 'none'
@@ -34,23 +41,33 @@ Page({
     if (identity === 'student') {
       // 学生登录的逻辑
       console.log('学生登录：', studentId, password);
+      // 这里可以调用后端接口进行验证
+      wx.showToast({
+        title: '登录成功',
+        icon: 'success'
+      });
+      console.log('准备跳转到 index/index');
+      // 登录成功后跳转到相应页面
+      wx.navigateTo({
+        url: '/pages/index/index?studentId=${studentId}',
+      });
     } else {
       // 管理员登录的逻辑
-      console.log('管理员登录：', studentId, password);
-    }
-
-    // 这里可以调用后端接口进行验证
-    wx.showToast({
-      title: '登录成功',
-      icon: 'success'
-    });
-    console.log('准备跳转到 index/index');
-    // 登录成功后跳转到相应页面
-    wx.navigateTo({
-      url: '/pages/index/index?studentId=${studentId}',
-    });
+      console.log('管理员登录：', username, password);
+      // 这里可以调用后端接口进行验证
+      wx.showToast({
+        title: '登录成功',
+        icon: 'success'
+      });
+      console.log('准备跳转到 admin/index');
+      // 登录成功后跳转到管理员页面
+      wx.navigateTo({
+        url: '/pages/admin/index',
+      });
+    }  
   },
-  // 3/14
+
+  // 处理注册
   onRegister: function() {
     // 注册逻辑
     console.log("注册按钮被点击");
@@ -60,4 +77,3 @@ Page({
     });
   }
 });
-

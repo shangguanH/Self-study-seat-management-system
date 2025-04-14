@@ -6,7 +6,7 @@
 
   <!-- 用户身份选择 -->
   <view class="identity-selector">
-    <radio-group class="identity-options">
+    <radio-group class="identity-options" bindchange="onIdentityChange">
       <label>
         <radio value="student" checked /> 学生
       </label>

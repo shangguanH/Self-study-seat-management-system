@@ -40,7 +40,7 @@ Page({
     // 登录逻辑，可以根据身份判断是否为管理员或学生
     if (identity === 'student') {
       // 学生登录的逻辑
-      console.log('学生登录：', studentId, password);
+      console.log('学生登录：', username, password);
       // 这里可以调用后端接口进行验证
       wx.showToast({
         title: '登录成功',

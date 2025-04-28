@@ -2,18 +2,21 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  /* Removed fixed height to allow content to determine height */
+  min-height: 100vh; /* Ensure it fills at least the viewport height */
   background-color: #f9f9f9;
+  padding-bottom: 70px; /* Add padding at the bottom to avoid overlap with fixed nav-bar */
+  box-sizing: border-box; /* Include padding in height calculation */
 }
 
 /* 内容部分 */
 .content {
-  flex: 1;
+  flex: 1; /* Allows content to grow */
   padding: 20px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  margin: 20px 20px 0 20px; /* Add margin to sides and top */
 }
 
 /* 页面标题 */
@@ -30,91 +33,81 @@
 
 /* 当前预约状态信息框 */
 .appointment-status {
-  margin-top: 30px;
-  padding: 10px;
-  background-color: #f0f8ff;
+  margin-top: 20px; /* Reduced top margin */
+  margin-bottom: 20px; /* Added bottom margin */
+  padding: 15px; /* Slightly increased padding */
+  background-color: #f0f8ff; /* AliceBlue - light and pleasant */
   border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+  text-align: left; /* Changed to left align for better readability */
 }
 
 .status-title {
+  display: block; /* Make title take its own line */
   font-size: 16px;
-  color: #007aff;
+  color: #007aff; /* Standard iOS blue */
   font-weight: bold;
+  margin-bottom: 8px; /* Space below title */
 }
 
 .status-text {
+  display: block; /* Each status text on its own line */
   font-size: 14px;
-  color: #666;
-  margin-top: 10px;
+  color: #555; /* Slightly darker grey */
+  margin-top: 5px; /* Space between status lines */
+  line-height: 1.5;
 }
 
-/* 预约按钮样式 */
+/* Common Button Styles (Apply to all main action buttons) */
+.content > button { /* Target direct button children of .content */
+  width: 100%;
+  height: 48px;
+  color: white;
+  border: none;
+  border-radius: 24px; /* Pill shape */
+  font-size: 18px;
+  margin-top: 15px; /* Consistent spacing */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  display: flex; /* For centering text if needed */
+  align-items: center;
+  justify-content: center;
+  line-height: 48px; /* Vertically center text */
+}
+.content > button::after {
+    border: none; /* Remove default weui border */
+}
+
+/* Specific Button Colors */
 .reserve-btn {
-  width: 100%;
-  height: 48px;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 18px;
-  margin-top: 30px;
+  background-color: #007aff; /* Blue */
 }
-
-/* 签到按钮样式 */
 .sign-in-btn {
-  width: 100%;
-  height: 48px;
-  background-color: #34c759;
-  color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 18px;
-  margin-top: 20px;
+  background-color: #34c759; /* Green */
 }
-
-.story-btn {
-  width: 100%;
-  height: 48px;
-  background-color: #cf2138;
-  color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 18px;
-  margin-top: 20px;
-}
-
-/* 暂离按钮样式 */
 .temporary-leave-btn {
-  width: 100%;
-  height: 48px;
-  background-color: #ffcc00;
-  color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 18px;
-  margin-top: 20px;
+  background-color: #ff9500; /* Orange */
 }
-
-/* 恢复在座按钮样式 */
-.temporary-leave-btn.active {
-  background-color: #34c759;
+.temporary-leave-btn.active { /* Style for '恢复在座' state */
+  background-color: #34c759; /* Green when active (Return state) */
 }
-
-/* 释放座位按钮样式 */
 .release-seat-btn {
-  width: 100%;
-  height: 48px;
-  background-color: #cf2138;
-  color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 18px;
-  margin-top: 20px;
+  background-color: #ff3b30; /* Red */
+}
+.story-btn {
+  background-color: #5856d6; /* Indigo */
+  margin-bottom: 20px; /* Add space before nav bar */
 }
 
-/* 预约说明 */
+/* Button Active States */
+.reserve-btn:active { background-color: #005bb5; }
+.sign-in-btn:active { background-color: #29a347; }
+.temporary-leave-btn:active { background-color: #d98000; }
+.temporary-leave-btn.active:active { background-color: #29a347; }
+.release-seat-btn:active { background-color: #d63027; }
+.story-btn:active { background-color: #4644a8; }
+
+
+/* 预约说明 (Keep if you have this element) */
 .reserve-info {
   margin-top: 20px;
   text-align: center;
@@ -126,24 +119,215 @@
 .nav-bar {
   display: flex;
   justify-content: space-around;
-  width: 100%;  /* Ensure the navbar spans the full width of the screen */
-  padding: 10px 0;  /* Adjust the padding to ensure it's not too wide */
-  background-color: #2d8cf0;
-  border-radius: 10px 10px 0 0;  /* Rounded corners on top, not the bottom */
-  position: fixed;  /* Keep it at the bottom of the screen */
+  align-items: center; /* Vertically center items */
+  width: 100%;
+  height: 60px; /* Fixed height for the nav bar */
+  padding: 0 10px; /* Padding on the sides */
+  background-color: #f8f8f8; /* Light background for nav */
+  border-top: 1px solid #e0e0e0; /* Subtle top border */
+  position: fixed;
   bottom: 0;
   left: 0;
+  z-index: 99; /* Ensure it's above content but below modals */
+  box-sizing: border-box;
 }
 
 .nav-item {
-  font-size: 16px;
-  color: white;
+  flex: 1; /* Each item takes equal space */
+  text-align: center;
+  font-size: 14px; /* Slightly smaller font */
+  color: #666; /* Default nav item color */
   text-decoration: none;
-  padding: 10px 15px;
-  border-radius: 5px;
+  /* Remove hover styles as :hover is less relevant on mobile */
+  /* Consider adding an 'active' class for the current page */
+}
+/* Example active state - apply this class in JS based on current page */
+.nav-item.active {
+    color: #007aff; /* Highlight color for active tab */
+    font-weight: bold;
 }
 
-.nav-item:hover {
-  background-color: #1a6db3;
-  transition: background-color 0.3s;
+
+/* ===================== MODAL STYLES (Common) ===================== */
+
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Consistent mask darkness */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure modals are on top */
 }
+
+.modal-dialog {
+  background-color: #ffffff;
+  border-radius: 12px; /* Slightly more rounded corners for modals */
+  width: 85%; /* Standard width */
+  max-width: 400px; /* Max width */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
+}
+
+.modal-title {
+  padding: 18px 20px;
+  font-size: 18px;
+  font-weight: 600; /* Semibold */
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0; /* Lighter separator */
+  color: #333;
+}
+
+.modal-content {
+  /* Padding will be specific to sign-in or history */
+  flex-shrink: 1; /* Allow content to shrink if needed */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.modal-footer {
+  display: flex;
+  border-top: 1px solid #f0f0f0; /* Lighter separator */
+}
+
+.modal-footer .modal-button {
+  flex: 1;
+  padding: 15px 0; /* Consistent padding */
+  text-align: center;
+  font-size: 17px; /* Standard modal button size */
+  border: none;
+  background-color: transparent;
+  border-radius: 0;
+  line-height: normal; /* Reset line height */
+}
+.modal-footer .modal-button::after {
+  border: none;
+}
+/* Add border between buttons */
+.modal-footer .modal-button:not(:first-child) {
+  border-left: 1px solid #f0f0f0;
+}
+/* Button Active States */
+.modal-footer .modal-button:active {
+  background-color: #f5f5f5; /* Subtle feedback */
+}
+
+
+/* ===================== Sign-In Modal Specific Styles ===================== */
+.signin-modal-content {
+  padding: 30px 25px; /* Padding for input area */
+  display: flex; /* Use flex for centering input if needed */
+  flex-direction: column;
+  align-items: center;
+}
+
+.signin-code-input {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px 15px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 20px; /* Larger font for code */
+  margin-bottom: 15px; /* Space below input */
+  letter-spacing: 2px; /* Space out digits slightly */
+}
+
+.signin-modal-footer .modal-button.cancel {
+  color: #666; /* Standard cancel color */
+}
+.signin-modal-footer .modal-button.confirm {
+  color: #34c759; /* Match sign-in button green */
+  font-weight: 600; /* Make confirm bold */
+}
+
+
+/* ===================== History Modal Specific Styles ===================== */
+.history-modal-dialog {
+  /* Inherits base modal dialog styles */
+  /* Specific height constraints are handled by scroll-view style attr */
+}
+
+.history-modal-content {
+   padding: 0; /* Remove padding, scroll-view handles it */
+   max-height: 65vh; /* Limit max height for scroll view */
+}
+
+/* Styles for scroll-view itself if needed (already has style attribute in WXML) */
+.history-modal-content scroll-view {
+    /* You can add styles here if needed, e.g., background */
+}
+
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #555;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+.history-details view {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.history-details .detail-label {
+  color: #888;
+  margin-right: 5px;
+  display: inline-block;
+  /* min-width: 60px; /* Optional: Align labels */
+}
+.booking-time {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+.history-actions .rebook-button {
+  background-color: #007aff; /* Blue */
+  color: white;
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 15px;
+  border: none;
+  line-height: normal;
+  white-space: nowrap;
+}
+.rebook-button::after{
+    border: none;
+}
+
+.no-history {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.history-modal-footer .modal-button.close-history { /* Use class from WXML */
+  color: #007aff; /* Blue */
+  font-weight: 600; /* Bold close */
+}
+/* If only one button, make it full width */
+.history-modal-footer .modal-button:only-child {
+    flex-basis: 100%;
+    border-left: none; /* No left border if it's the only button */
+}
+
+/* === END: Modal Styles === */
+

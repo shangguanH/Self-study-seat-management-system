@@ -64,7 +64,7 @@ Page({
   onRoomClick: function(e) {
     const roomIndex = e.currentTarget.dataset.index;
     const selectedRoom = this.data.filteredRooms[roomIndex];
-    const url = `/pages/reserve/index?roomName=${selectedRoom.name}&totalSeats=${selectedRoom.totalSeats}&availableSeats=${selectedRoom.availableSeats}&hasCharging=${selectedRoom.hasCharging}&isQuiet=${selectedRoom.isQuiet}`;
+    const url = `/pages/reserve/index?roomName=${selectedRoom.name}`;
     console.log("跳转的 URL: ", url);  // 输出跳转的 URL，调试时查看
     wx.navigateTo({
       url: url,

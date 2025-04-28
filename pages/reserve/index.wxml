@@ -1,28 +1,65 @@
-<view class="container">
-  <view class="room-info">
-    <text>自习室: {{roomName}}</text>
-    <text>总座位数: {{totalSeats}}</text>
-    <text>可用座位数: {{availableSeats}}</text>
-    <text>是否安静: {{isQuiet ? '是' : '否'}}</text>
-    <text>是否有充电插座: {{hasCharging ? '是' : '否'}}</text>
+<view class="room-info">
+  <text>自习室: {{roomName}}</text>
   </view>
 
-  <view class="seats-container">
-    <block wx:for="{{seats}}" wx:key="index">
-      <view class="seat" data-index="{{index}}" bindtap="onSeatClick">
-        <view class="seat-inner {{item.status}}">
-          <text>{{index + 1}}</text>
-        </view>
-      </view>
-    </block>
+<view class="seat-grid">
+  <view
+    wx:for="{{seats}}"
+    wx:key="id"
+    class="seat {{item.status}}"
+    data-index="{{index}}"
+    bindtap="onSeatClick"
+  >
+    {{index + 1}}
   </view>
+</view>
 
-  <!-- 弹窗 -->
-  <view wx:if="{{showModal}}" class="modal">
+<view class="modal-mask" wx:if="{{showReservationModal}}" catchtouchmove="preventTouchMove">
+  <view class="modal-dialog">
+    <view class="modal-title">预约座位 {{selectedSeatIndex !== null ? selectedSeatIndex + 1 : ''}}</view>
     <view class="modal-content">
-      <text>{{modalMessage}}</text>
-      <button bindtap="confirmAction">确定</button>
-      <button bindtap="cancelAction">取消</button>
+      <view class="form-item">
+        <text>日期:</text>
+        <picker mode="date" value="{{selectedDate}}" start="{{minDate}}" bindchange="bindDateChange">
+          <view class="picker-value">
+            {{selectedDate}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text>开始时间:</text>
+        <picker mode="time" value="{{startTime}}" start="00:00" end="23:59" bindchange="bindStartTimeChange">
+           <view class="picker-value">
+            {{startTime}}
+          </view>
+        </picker>
+      </view>
+       <view class="form-item">
+        <text>结束时间:</text>
+        <picker mode="time" value="{{endTime}}" start="00:00" end="23:59" bindchange="bindEndTimeChange">
+          <view class="picker-value">
+            {{endTime}}
+          </view>
+        </picker>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-button cancel" bindtap="cancelReservationSelection">取消</button>
+      <button class="modal-button confirm" bindtap="confirmReservation">确定预约</button>
     </view>
   </view>
 </view>
+
+<view class="modal-mask" wx:if="{{showCancelModal}}" catchtouchmove="preventTouchMove">
+    <view class="modal-dialog">
+        <view class="modal-title">确认操作</view>
+        <view class="modal-content">
+            <text>{{cancelModalMessage}}</text>
+        </view>
+        <view class="modal-footer">
+            <button class="modal-button cancel" bindtap="cancelCancellationAction">返回</button>
+            <button class="modal-button confirm" bindtap="confirmCancellation">确认取消</button>
+        </view>
+    </view>
+</view>
+

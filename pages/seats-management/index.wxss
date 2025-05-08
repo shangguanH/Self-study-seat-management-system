@@ -6,18 +6,18 @@
 }
 
 .header {
-  padding: 20rpx 0;
-  margin-bottom: 20rpx;
-}
-
-.title {
   font-size: 36rpx;
   font-weight: bold;
-  color: #333;
+  border-bottom: 1rpx solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
 }
 
 .seats-list {
-  margin-bottom: 100rpx; /* 确保列表与底部按钮之间有足够的间距 */
+  position: absolute;
+  top: 200rpx;
 }
 
 .seat-item {
@@ -138,20 +138,27 @@
 }
 
 /* 添加新座位按钮 */
-.add-seat-btn {
-  position: fixed;
-  bottom: 30rpx;
-  right: 30rpx;
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background-color: #4CAF50;
-  color: white;
-  display: flex;
-  justify-content: center;
+.operator {
+  text-align: right;
+  position: absolute;
+  top: 120rpx;
+}
+
+button {
+  text-align: center;
   align-items: center;
-  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.2);
-  z-index: 10;
+}
+
+.add-seat-btn {
+  display: inline-block;
+  background-color: #07c160;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 0 30rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  font-size: 28rpx;
 }
 
 /* 编辑弹窗样式 */

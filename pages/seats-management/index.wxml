@@ -3,13 +3,17 @@
   <view class="header">
     <text class="title">座位管理</text>
   </view>
-
+  <!-- 添加新座位按钮 -->
+  <view class="operator">
+    <button class="add-seat-btn" bindtap="onAddSeat">添加新座位
+    </button>
+  </view>
+  
   <!-- 座位列表 -->
   <view class="seats-list">
     <block wx:for="{{seats}}" wx:key="id">
       <view class="seat-item" bindtap="onViewSeatDetails" data-id="{{item.id}}">
         <text class="seat-id">座位 ID: {{item.id}}</text>
-        <text class="seat-status">{{item.reservationStatus ? '已预约' : '空闲'}}</text>
       </view>
     </block>
   </view>
@@ -45,13 +49,10 @@
       </view>
       <view class="modal-footer">
         <button class="edit-btn" bindtap="onEditSeat">编辑</button>
-        <button class="delete-btn" bindtap="onDeleteSeat">注销</button>
+        <button class="delete-btn" bindtap="onDeleteSeat">删除</button>
       </view>
     </view>
   </view>
-
-  <!-- 添加新座位按钮 -->
-  <button class="add-seat-btn" bindtap="onAddSeat">添加新座位</button>
 
   <!-- 座位编辑弹窗 -->
   <view class="modal" wx:if="{{showEditModal}}">

@@ -1,121 +1,73 @@
 <view class="container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
   <view class="header">自习室列表</view>
   <view class="operator">
     <button bindtap="onAddStudyRoom">新增自习室</button>
   </view>
   <view class="list">
     <block wx:for="{{studyRooms}}" wx:key="id">
-      <view class="room-item" bindtap="onViewRoomDetails" data-id="{{item.id}}">
-        <text>{{item.name}} - {{item.status}}</text>
+      <view class="room-item" bindtap="onViewRoomDetails" data-id="{{item.room_id}}">
+        <text>{{item.name}} - {{item.status === 1 ? '开放' : '关闭'}}</text>
       </view>
     </block>
-  </view>
-  
-  <!-- 新增自习室的弹窗 -->
-  <view class="modal" hidden="{{!showModal}}">
-    <view class="modal-content">
-      <view class="modal-header">新增自习室</view>
-      <view class="modal-body">
-        <view class="form-item">
-          <text>自习室名字:</text>
-          <input type="text" placeholder="请输入自习室名字" bindinput="onInputRoomName" />
-        </view>
-        <view class="form-item">
-          <text>自习室类型:</text>
-          <picker mode="selector" range="{{roomTypes}}" bindchange="onRoomTypeChange">
-            <view class="picker">
-              {{selectedRoomType || '请选择自习室类型'}}
-            </view>
-          </picker>
-        </view>
-        <view class="form-item">
-          <text>座位个数:</text>
-          <input type="number" placeholder="请输入座位个数" bindinput="onInputSeatCount" />
-        </view>
-        <view class="form-item">
-          <text>开放时间:</text>
-          <view class="time-picker-container">
-            <picker mode="selector" range="{{timeOptions}}" bindchange="onStartTimeChange">
-              <view class="picker">
-                {{startTimeText || '选择开始时间'}}
-              </view>
-            </picker>
-            <picker mode="selector" range="{{timeOptions}}" bindchange="onEndTimeChange">
-              <view class="picker">
-                {{endTimeText || '选择结束时间'}}
-              </view>
-            </picker>
-          </view>
-        </view>
-        <view class="form-item">
-          <text>状态:</text>
-          <picker mode="selector" range="{{statusOptions}}" bindchange="onStatusChange">
-            <view class="picker">
-              {{currentStatus || '请选择状态'}}
-            </view>
-          </picker>
-        </view>
-      </view>
-      <view class="modal-footer">
-        <button bindtap="onSaveStudyRoom">确定</button>
-        <button bindtap="onCancel">取消</button>
-      </view>
+    <view wx:if="{{!loading && studyRooms.length === 0}}"        class="empty-tip">
+      暂无自习室数据 
     </view>
   </view>
   
-  <!-- 查看自习室详情的弹窗 -->
-  <view class="modal" hidden="{{!showRoomDetails}}">
+  <!-- 新增自习室的弹窗 || 自习室详情 -->
+  <view class="modal" hidden="{{!showModal}}">
     <view class="modal-content">
       <view class="modal-header">
-        <text>自习室详情</text>
-        <button bindtap="onCloseDetails" class="close-button">×</button>
+        <text>{{isEditMode ? '自习室详情' : '新增自习室'}}</text>
       </view>
-      <view class="modal-body">
+      <scroll-view scroll-y class="modal-body">
         <view class="form-item">
-          <text>自习室名字:</text>
-          <input type="text" placeholder="请输入自习室名字" value="{{currentRoom.name}}" bindinput="onEditRoomName" />
+          <text class="label">名称</text>
+          <input type="text" placeholder="请输入名称" value="{{currentRoom.name}}" 
+                 bindinput="onInputChange" data-field="currentRoom.name" />
         </view>
         <view class="form-item">
-          <text>自习室类型:</text>
-          <picker mode="selector" range="{{roomTypes}}" bindchange="onEditRoomTypeChange">
+          <text class="label">位置</text>
+          <input type="text" placeholder="请输入位置" value="{{currentRoom.location}}" 
+                 bindinput="onInputChange" data-field="currentRoom.location" />
+        </view>
+        <view class="form-item">
+          <text class="label">类型</text>
+          <picker mode="selector" range="{{roomTypes}}" range-key="name" 
+                  value="{{currentRoom.type}}" bindchange="onTypeChange" data-room="current">
             <view class="picker">
-              {{editRoomType || currentRoom.type}}
+              {{roomTypes[currentRoom.type].name}}
             </view>
           </picker>
         </view>
         <view class="form-item">
-          <text>座位个数:</text>
-          <input type="number" placeholder="请输入座位个数" value="{{currentRoom.seatCount}}" bindinput="onEditSeatCount" />
+          <text class="label">容量</text>
+          <input type="number" placeholder="请输入容量" value="{{currentRoom.capacity}}" 
+                 bindinput="onInputChange" data-field="currentRoom.capacity" />
         </view>
         <view class="form-item">
-          <text>开放时间:</text>
-          <view class="time-picker-container">
-            <picker mode="selector" range="{{timeOptions}}" bindchange="onEditStartTimeChange">
-              <view class="picker">
-                {{editStartTime || currentRoom.startTime}}
-              </view>
+          <text class="label">开放时间</text>
+          <view class="time-picker">
+            <picker mode="selector" range="{{timeOptions}}" value="{{timeOptions.indexOf(currentRoom.open_time)}}" 
+                    bindchange="onTimeChange" data-field="open_time" data-room="current">
+              <view class="picker">{{currentRoom.open_time || '开始时间'}}</view>
             </picker>
-            <picker mode="selector" range="{{timeOptions}}" bindchange="onEditEndTimeChange">
-              <view class="picker">
-                {{editEndTime || currentRoom.endTime}}
-              </view>
+            <text>至</text>
+            <picker mode="selector" range="{{timeOptions}}" value="{{timeOptions.indexOf(currentRoom.close_time)}}" 
+                    bindchange="onTimeChange" data-field="close_time" data-room="current">
+              <view class="picker">{{currentRoom.close_time || '结束时间'}}</view>
             </picker>
           </view>
         </view>
-        <view class="form-item">
-          <text>状态:</text>
-          <picker mode="selector" range="{{statusOptions}}" bindchange="onEditStatusChange">
-            <view class="picker">
-              {{editStatus || currentRoom.status}}
-            </view>
-          </picker>
-        </view>
-      </view>
+      </scroll-view>
       <view class="modal-footer">
-        <button bindtap="onManageSeats">座位管理</button>
-        <button bindtap="onUpdateRoom">修改</button>
-        <button bindtap="onDeleteRoom">注销</button>
-        <button bindtap="onCloseDetails">取消</button>
+        <button class="btn manage" wx:if="{{isEditMode}}" bindtap="onManageSeats">座位管理</button>
+        <button class="btn delete" wx:if="{{isEditMode}}" bindtap="onDeleteRoom">删除</button>
+        <button class="btn cancel" bindtap="onCancel">取消</button>
+        <button class="btn confirm" bindtap="{{isEditMode ? 'onUpdateRoom' : 'onSaveStudyRoom'}}">
+          {{isEditMode ? '保存' : '确认'}}
+        </button>
       </view>
     </view>
   </view>

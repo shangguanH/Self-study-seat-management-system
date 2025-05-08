@@ -1,3 +1,4 @@
+const { TEST_URL } = require('../../utils/config');
 Page({
   data: {
     identity: 'student',  // 默认选择学生
@@ -26,46 +27,78 @@ Page({
   },
   
   // 处理登录
-  onLogin: function () {
-    const { username, password, identity } = this.data;
+  // 处理登录
+onLogin: function () {
+  const { username, password, identity } = this.data;
 
-    if (!username || !password) {
+  if (!username || !password) {
+    wx.showToast({
+      title: '请填写学工号和密码',
+      icon: 'none'
+    });
+    return;
+  }
+
+  // Show loading indicator
+  wx.showLoading({
+    title: '登录中...',
+  });
+
+  // Determine the appropriate API endpoint based on identity
+  const apiUrl = TEST_URL +  (identity == 'student' 
+    ? '/api/v1.0/student/login' 
+    : '/api/v1.0/admin/login');
+
+  // Make the API request
+  wx.request({
+    url: apiUrl,
+    method: 'POST',
+    data: {
+      username: username,
+      password: password
+    },
+    success: (res) => {
+      wx.hideLoading();
+      console.log(res.statusCode);
+      if (res.statusCode === 200) {
+        // Successful login
+        wx.showToast({
+          title: '登录成功',
+          icon: 'success'
+        });
+        
+        // Store user information if needed
+        if (res.statusCode == 200) {
+          wx.setStorageSync('token', res.data.token || '');
+        }
+        // Redirect based on identity
+        if (identity === 'student') {
+          wx.navigateTo({
+            url: `/pages/index/index?studentId=${username}`,
+          });
+        } else {
+          wx.navigateTo({
+            url: '/pages/admin/index',
+          });
+        }
+      } else {
+        // Handle other status codes
+        wx.showToast({
+          title: res.data.message || '登录失败',
+          icon: 'none'
+        });
+      }
+    },
+    fail: (err) => {
+      wx.hideLoading();
       wx.showToast({
-        title: '请填写学工号和密码',
+        title: '网络错误，请稍后重试',
         icon: 'none'
       });
-      return;
+      console.error('Login error:', err);
     }
-
-    // 登录逻辑，可以根据身份判断是否为管理员或学生
-    if (identity === 'student') {
-      // 学生登录的逻辑
-      console.log('学生登录：', username, password);
-      // 这里可以调用后端接口进行验证
-      wx.showToast({
-        title: '登录成功',
-        icon: 'success'
-      });
-      console.log('准备跳转到 index/index');
-      // 登录成功后跳转到相应页面
-      wx.navigateTo({
-        url: '/pages/index/index?studentId=${studentId}',
-      });
-    } else {
-      // 管理员登录的逻辑
-      console.log('管理员登录：', username, password);
-      // 这里可以调用后端接口进行验证
-      wx.showToast({
-        title: '登录成功',
-        icon: 'success'
-      });
-      console.log('准备跳转到 admin/index');
-      // 登录成功后跳转到管理员页面
-      wx.navigateTo({
-        url: '/pages/admin/index',
-      });
-    }  
-  },
+  });
+},
 
   // 处理注册
   onRegister: function() {

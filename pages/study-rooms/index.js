@@ -1,26 +1,55 @@
+const { TEST_URL } = require('../../utils/config');
+const { requestWithToken } = require('../../utils/request');
+
+//时间戳和字符串之间的转换
+function timeStrToTimestamp(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const now = new Date(); // 用今天的日期填充
+  now.setHours(hours, minutes, 0, 0);
+  return now.getTime(); // 返回时间戳（毫秒）
+}
+
+function timestampToTimeStr(timestamp) {
+  const date = new Date(timestamp);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+
 Page({
   data: {
-    studyRooms: [], // 自习室列表
-    showModal: false, // 是否显示新增自习室弹窗
-    showRoomDetails: false, // 是否显示自习室详情弹窗
-    roomTypes: ['通用', '院系'], // 自习室类型选项
-    statusOptions: ['开放', '关闭'], // 状态选项
-    timeOptions: [], // 时间选项
-    selectedRoomType: '', // 选中的自习室类型
-    roomName: '', // 自习室名字
-    seatCount: '', // 座位个数
-    startTime: '', // 开始时间
-    endTime: '', // 结束时间
-    startTimeText: '', // 开始时间文本
-    endTimeText: '', // 结束时间文本
-    currentStatus: '', // 当前状态
-    currentRoom: null, // 当前选中的自习室
-    editRoomType: '', // 编辑时的自习室类型
-    editStartTime: '', // 编辑时的开始时间
-    editEndTime: '', // 编辑时的结束时间
-    editStatus: '', // 编辑时的状态
-    editSeatCount: '', // 编辑时的座位个数
-    editRoomName: '' // 编辑时的自习室名字
+    // 自习室列表（保持与API完全一致的结构）
+    studyRooms: [],
+    
+    // UI控制状态
+    showModal: false,
+    isEditMode: false,
+    loading: true,
+    
+    // 表单选项数据
+    roomTypes: [
+      { id: 0, name: '通用' },
+      { id: 1, name: '计算机学院' },
+      { id: 2, name: '物理学院' }
+    ],
+    statusOptions: [
+      { id: 1, name: '开放' },
+      { id: 0, name: '关闭' }
+    ],
+    timeOptions: [],
+    
+    // 新增自习室表单数据
+    currentRoom: {
+      name: '',
+      location: '',
+      type: 0,        // 默认通用类型
+      status: 1,      // 默认开放
+      seat_number: '',
+      capacity: '',
+      open_time: '08:00',  // 默认开放时间
+      close_time: '22:00'  // 默认关闭时间
+    },
   },
 
   onLoad: function() {
@@ -28,99 +57,130 @@ Page({
     this.generateTimeOptions();
   },
 
-  loadStudyRooms: function() {
-    // 模拟从服务器获取自习室列表
-    const studyRooms = [
-      { 
-        id: 1, 
-        name: '自习室A', 
-        type: '通用', 
-        seatCount: 50, 
-        startTime: '07:00', 
-        endTime: '21:00', 
-        status: '开放' 
-      },
-      { 
-        id: 2, 
-        name: '自习室B', 
-        type: '院系', 
-        seatCount: 30, 
-        startTime: '08:00', 
-        endTime: '22:00', 
-        status: '关闭' 
-      },
-      // 更多自习室数据...
-    ];
-    this.setData({ studyRooms });
-  },
-
+  // 生成时间选择器选项
   generateTimeOptions: function() {
-    const timeOptions = [];
-    for (let hour = 0; hour < 24; hour++) {
-      timeOptions.push(`${hour.toString().padStart(2, '0')}:00`);
-      if (hour < 23) {
-        timeOptions.push(`${hour.toString().padStart(2, '0')}:30`);
-      }
+    const options = [];
+    for (let h = 0; h < 24; h++) {
+      const hour = h.toString().padStart(2, '0');
+      options.push(`${hour}:00`);
+      options.push(`${hour}:30`);
     }
-    this.setData({ timeOptions });
+    this.setData({ timeOptions: options });
+  },
+  // 从API加载自习室数据
+  loadStudyRooms: function() {
+    this.setData({ loading: true });
+  
+    requestWithToken({
+      url: '/api/v1.0/admin/rooms',
+      method: 'GET',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          this.setData({
+            studyRooms: res.data.rooms || [],
+            loading: false
+          });
+        } else {
+          console.log(res.statusCode);
+          this.handleError('加载失败');
+        }
+      },
+      fail: () => this.handleError('网络错误')
+    });
   },
 
+  // 错误处理
+  handleError: function(msg) {
+    this.setData({ loading: false });
+    wx.showToast({ title: msg, icon: 'none' });
+  },
+
+// 处理类型选择变化
+onTypeChange: function(e) {
+  const typeIndex = e.detail.value;
+  this.setData({
+    'currentRoom.type': typeIndex
+  });
+},
+
+
+// 处理时间选择变化
+onTimeChange: function(e) {
+  const { field, room } = e.currentTarget.dataset;
+  const time = this.data.timeOptions[e.detail.value];
+  this.setData({[`currentRoom.${field}`]: time});
+},
+
+// 处理状态选择变化
+onStatusChange: function(e) {
+  const { room } = e.currentTarget.dataset;
+  const statusIndex = e.detail.value;
+  this.setData({'currentRoom.status': statusIndex});
+},
+
+// 关闭详情弹窗
+onCloseDetails: function() {
+  this.setData({
+    showRoomDetails: false
+  });
+},
+
+  // 打开新增自习室弹窗
   onAddStudyRoom: function() {
     this.setData({
       showModal: true,
-      roomName: '',
-      seatCount: '',
-      selectedRoomType: '',
-      startTime: '',
-      endTime: '',
-      startTimeText: '',
-      endTimeText: '',
-      currentStatus: ''
+      isEditMode: false,
+      currentRoom: {
+        name: '',
+        location: '',
+        type: 0,
+        status: 1,
+        capacity: '',
+        open_time: '08:00',
+        close_time: '22:00'
+      }
+    });
+  },
+  
+  // 查看详情
+  onViewRoomDetails(e) {
+    const roomId = e.currentTarget.dataset.id;
+    const room = this.data.studyRooms.find(r => r.room_id === roomId);
+    
+    const transformedRoom = {
+      ...room,
+      open_time: timestampToTimeStr(room.open_timestamp),
+      close_time: timestampToTimeStr(room.close_timestamp)
+    };
+
+    this.setData({
+      showModal: true,
+      isEditMode: true,
+      currentRoom: transformedRoom // 深拷贝避免直接修改原数据
     });
   },
 
-  onInputRoomName: function(e) {
-    this.setData({
-      roomName: e.detail.value
-    });
-  },
-
-  onRoomTypeChange: function(e) {
-    this.setData({
-      selectedRoomType: this.data.roomTypes[e.detail.value]
-    });
-  },
-
-  onInputSeatCount: function(e) {
-    this.setData({
-      seatCount: e.detail.value
-    });
-  },
-
-  onStartTimeChange: function(e) {
-    const startTime = this.data.timeOptions[e.detail.value];
-    this.setData({
-      startTime: startTime,
-      startTimeText: startTime
-    });
-  },
-
-  onEndTimeChange: function(e) {
-    const endTime = this.data.timeOptions[e.detail.value];
-    this.setData({
-      endTime: endTime,
-      endTimeText: endTime
-    });
-  },
-
-  onStatusChange: function(e) {
-    this.setData({
-      currentStatus: this.data.statusOptions[e.detail.value]
-    });
+  // 处理表单输入
+  onInputChange: function(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail.value;
+    
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      this.setData({
+        [`${parent}.${child}`]: value
+      });
+    } else {
+      this.setData({
+        [field]: value
+      });
+    }
   },
 
   onSaveStudyRoom: function() {
-    if (!this.data.roomName || !this.data.seatCount || !this.data.selectedRoomType) {
+    const { currentRoom } = this.data;
+    
+    if (!currentRoom.name || !currentRoom.location || !currentRoom.capacity) {
       wx.showToast({
         title: '请填写所有字段',
         icon: 'none'
@@ -128,24 +188,31 @@ Page({
       return;
     }
 
-    const newRoom = {
-      id: this.data.studyRooms.length + 1,
-      name: this.data.roomName,
-      type: this.data.selectedRoomType,
-      seatCount: parseInt(this.data.seatCount),
-      startTime: this.data.startTime,
-      endTime: this.data.endTime,
-      status: this.data.currentStatus || '开放'
+    // 转换为数字类型
+    const payload = {
+      ...currentRoom,
+      capacity: parseInt(currentRoom.capacity),
+      type: currentRoom.type,
+      status: currentRoom.status,
+      open_time: timeStrToTimestamp(currentRoom.open_time),
+      close_time: timeStrToTimestamp(currentRoom.close_time)
     };
-
-    this.setData({
-      studyRooms: [...this.data.studyRooms, newRoom],
-      showModal: false
-    });
-
-    wx.showToast({
-      title: '自习室添加成功',
-      icon: 'success'
+    console.log(payload);
+    requestWithToken({
+      url: '/api/v1.0/admin/rooms',
+      method: 'POST',
+      data: payload,
+      success: (res) => {
+        if (res.statusCode === 201) {
+          wx.showToast({ title: '添加成功' });
+          this.loadStudyRooms();
+          this.setData({ showModal: false });
+        } else {
+          this.handleError('添加失败');
+          console.log(res);
+        }
+      },
+      fail: () => this.handleError('网络错误')
     });
   },
 
@@ -155,99 +222,30 @@ Page({
     });
   },
 
-  onViewRoomDetails: function(e) {
-    const roomId = e.currentTarget.dataset.id;
-    const room = this.data.studyRooms.find(r => r.id === roomId);
-    this.setData({
-      showRoomDetails: true,
-      currentRoom: room,
-      editRoomName: room.name,
-      editRoomType: room.type,
-      editStartTime: room.startTime,
-      editEndTime: room.endTime,
-      editStatus: room.status,
-      editSeatCount: room.seatCount.toString()
-    });
-  },
-
-  onCloseDetails: function() {
-    this.setData({
-      showRoomDetails: false,
-      currentRoom: null
-    });
-  },
-
-  onEditRoomName: function(e) {
-    this.setData({
-      editRoomName: e.detail.value
-    });
-  },
-
-  onEditRoomTypeChange: function(e) {
-    this.setData({
-      editRoomType: this.data.roomTypes[e.detail.value]
-    });
-  },
-
-  onEditSeatCount: function(e) {
-    this.setData({
-      editSeatCount: e.detail.value
-    });
-  },
-
-  onEditStartTimeChange: function(e) {
-    const startTime = this.data.timeOptions[e.detail.value];
-    this.setData({
-      editStartTime: startTime
-    });
-  },
-
-  onEditEndTimeChange: function(e) {
-    const endTime = this.data.timeOptions[e.detail.value];
-    this.setData({
-      editEndTime: endTime
-    });
-  },
-
-  onEditStatusChange: function(e) {
-    this.setData({
-      editStatus: this.data.statusOptions[e.detail.value]
-    });
-  },
-
   onUpdateRoom: function() {
-    if (!this.data.editRoomName || !this.data.editSeatCount || !this.data.editRoomType) {
-      wx.showToast({
-        title: '请填写所有字段',
-        icon: 'none'
-      });
-      return;
-    }
-
-    const updatedRooms = this.data.studyRooms.map(room => {
-      if (room.id === this.data.currentRoom.id) {
-        return {
-          ...room,
-          name: this.data.editRoomName,
-          type: this.data.editRoomType,
-          seatCount: parseInt(this.data.editSeatCount),
-          startTime: this.data.editStartTime,
-          endTime: this.data.editEndTime,
-          status: this.data.editStatus
-        };
-      }
-      return room;
-    });
-
-    this.setData({
-      studyRooms: updatedRooms,
-      showRoomDetails: false,
-      currentRoom: null
-    });
-
-    wx.showToast({
-      title: '自习室修改成功',
-      icon: 'success'
+    const { currentRoom } = this.data;
+    const payload = {
+      ...currentRoom,
+      capacity: parseInt(currentRoom.capacity),
+      type: parseInt(currentRoom.type),
+      status: parseInt(currentRoom.status),
+      open_time: timeStrToTimestamp(currentRoom.open_time),
+      close_time: timeStrToTimestamp(currentRoom.close_time)
+    };
+    requestWithToken({
+      url:`/api/v1.0/admin/rooms/${currentRoom.room_id}`,
+      method: 'PATCH',
+      data: payload,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          wx.showToast({ title: '更新成功' });
+          this.loadStudyRooms();
+          this.setData({ showRoomDetails: false });
+        } else {
+          this.handleError('更新失败');
+        }
+      },
+      fail: () => this.handleError('网络错误')
     });
   },
 
@@ -255,31 +253,35 @@ Page({
     const roomId = this.data.currentRoom.id;
     // 确保目标页面存在
     wx.navigateTo({
-      // url: '/pages/seats-management/index?id=' + roomId
-      url: '/pages/seats-management/index'
+      url: '/pages/seats-management/index?roomid=' + roomId
+      // url: '/pages/seats-management/index'
     });
   },
 
+  // 删除自习室
   onDeleteRoom: function() {
+    const { currentRoom } = this.data;
     wx.showModal({
       title: '确认删除',
-      content: '是否确认删除该自习室？',
+      content: `确定删除自习室 ${currentRoom.name} 吗？`,
       success: (res) => {
         if (res.confirm) {
-          const updatedStudyRooms = this.data.studyRooms.filter(room => room.id !== this.data.currentRoom.id);
-          this.setData({
-            studyRooms: updatedStudyRooms,
-            showRoomDetails: false,
-            currentRoom: null
-          });
-          wx.showToast({
-            title: '自习室删除成功',
-            icon: 'success'
+          requestWithToken({
+            url: `/api/v1.0/admin/rooms/${currentRoom.room_id}`,
+            method: 'DELETE',
+            success: (res) => {
+              if (res.statusCode === 200) {
+                wx.showToast({ title: '删除成功' });
+                this.loadStudyRooms();
+                this.setData({ showRoomDetails: false });
+              } else {
+                this.handleError('删除失败');
+              }
+            },
+            fail: () => this.handleError('网络错误')
           });
         }
       }
     });
   }
-
-  
 });

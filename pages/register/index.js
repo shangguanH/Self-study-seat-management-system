@@ -1,3 +1,4 @@
+const { TEST_URL } = require('../../utils/config')
 Page({
   data: {
     identity: 'student', // 默认选择学生身份
@@ -6,6 +7,7 @@ Page({
     email: '',
     phone: ''
   },
+
 
   // 用户身份选择变化
   onIdentityChange: function(event) {
@@ -52,6 +54,7 @@ Page({
       });
       return;
     }
+    let regUrl = TEST_URL +  (identity == 'student' ? '/api/v1.0/student/register' : '/api/v1.0/admin/register');
     // 构造请求参数
     const registerData = {
       username,
@@ -59,10 +62,10 @@ Page({
       email,
       phone
     };
-
+    console.log(TEST_URL);
     // 发送 POST 请求到服务器
     wx.request({
-      url: 'http://127.0.0.1:4523/m1/6047364-5737349-default/api/v1.0/student/register', // API 域名
+      url: regUrl, // API 域名
       method: 'POST',
       data: registerData,
       header: {

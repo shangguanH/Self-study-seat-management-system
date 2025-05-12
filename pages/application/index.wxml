@@ -1,35 +1,63 @@
 <view class="container">
-  <!-- 筛选条件部分 -->
-  <view class="filters">
+  <!-- 筛选区域 -->
+  <view class="filter-section">
+    <view class="filter-title">筛选条件</view>
+    
+    <!-- 座位数筛选 -->
     <view class="filter-item">
-      <text>可用座位数：</text>
-      <input type="number" placeholder="请输入最小座位数" bindinput="onSeatCountChange" value="{{minSeatCount}}" />
+      <text class="filter-label">最少可用座位：</text>
+      <input type="number" class="seat-input" value="{{minSeatCount}}" bindinput="onSeatCountChange" placeholder="请输入" />
     </view>
-
+    
+    <!-- 自习室类型筛选 -->
     <view class="filter-item">
-      <checkbox-group bindchange="onAmenitiesChange">
-        <label>
-          <checkbox value="charging" checked="{{isCharging}}" /> 带充电插座
-        </label>
-        <label>
-          <checkbox value="quiet" checked="{{isQuiet}}" /> 安静学习区
-        </label>
-      </checkbox-group>
+      <text class="filter-label">自习室类型：</text>
+      <picker bindchange="onTypeChange" value="{{selectedType}}" range="{{typeOptions}}" range-key="name">
+        <view class="picker">
+          {{typeOptions[selectedType + 1].name || '请选择自习室类型'}}
+        </view>
+      </picker>
     </view>
   </view>
-
+  
   <!-- 自习室列表 -->
   <view class="room-list">
-    <block wx:for="{{filteredRooms}}" wx:key="index">
-      <view class="room-item" data-index="{{index}}" bindtap="onRoomClick">
-        <text>自习室：{{item.name}}</text>
-        <text>座位数：{{item.availableSeats}} / {{item.totalSeats}}</text>
-        <text>{{item.hasCharging ? '带充电插座' : '不带充电插座'}}</text>
-        <text>{{item.isQuiet ? '安静学习区' : '非安静区'}}</text>
-
-        <!-- 点击按钮进入预约页面 -->
-        <button>预约座位</button>
+    <view class="list-title">自习室列表</view>
+    
+    <block wx:if="{{filteredRooms.length > 0}}">
+      <view class="room-item" wx:for="{{filteredRooms}}" wx:key="room_id" bindtap="onRoomClick" data-index="{{index}}">
+        <view class="room-header">
+          <text class="room-name">{{item.name}}</text>
+          <text class="room-location">{{item.location}}</text>
+        </view>
+        
+        <view class="room-info">
+          <view class="info-item">
+            <text class="info-label">座位情况：</text>
+            <text class="info-value">{{item.availableSeats}}/{{item.totalSeats}}</text>
+          </view>
+          
+          <view class="info-item">
+            <text class="info-label">开放时间：</text>
+            <text class="info-value">{{item.open_time}}:00-{{item.close_time}}:00</text>
+          </view>
+          
+          <view class="room-tags">
+            <text class="tag type-tag type-{{item.type}}">
+              {{item.type === 0 ? '通用' : item.type === 1 ? '计算机学院' : '物理学院'}}
+            </text>
+            <text class="tag status-tag status-{{item.status}}">{{item.status === 1 ? '开放中' : '已关闭'}}</text>
+          </view>
+        </view>
+        
+        <view class="room-action">
+          <button class="reserve-btn">立即预约</button>
+        </view>
       </view>
     </block>
+    
+    <view class="empty-list" wx:else>
+      <text>没有符合条件的自习室</text>
+    </view>
   </view>
 </view>

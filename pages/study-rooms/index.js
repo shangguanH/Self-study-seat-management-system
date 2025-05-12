@@ -149,10 +149,10 @@ onCloseDetails: function() {
     
     const transformedRoom = {
       ...room,
-      open_time: timestampToTimeStr(room.open_timestamp),
-      close_time: timestampToTimeStr(room.close_timestamp)
+      open_time: timestampToTimeStr(room.open_time),
+      close_time: timestampToTimeStr(room.close_time)
     };
-
+    console.log(transformedRoom);
     this.setData({
       showModal: true,
       isEditMode: true,
@@ -225,22 +225,25 @@ onCloseDetails: function() {
   onUpdateRoom: function() {
     const { currentRoom } = this.data;
     const payload = {
-      ...currentRoom,
+      name:currentRoom.name,
+      location:currentRoom.location,
       capacity: parseInt(currentRoom.capacity),
       type: parseInt(currentRoom.type),
       status: parseInt(currentRoom.status),
       open_time: timeStrToTimestamp(currentRoom.open_time),
       close_time: timeStrToTimestamp(currentRoom.close_time)
     };
+    console.log(payload);
     requestWithToken({
       url:`/api/v1.0/admin/rooms/${currentRoom.room_id}`,
       method: 'PATCH',
       data: payload,
       success: (res) => {
+        console.log(res);
         if (res.statusCode === 200) {
           wx.showToast({ title: '更新成功' });
           this.loadStudyRooms();
-          this.setData({ showRoomDetails: false });
+          this.setData({ showModal: false });
         } else {
           this.handleError('更新失败');
         }
@@ -250,7 +253,8 @@ onCloseDetails: function() {
   },
 
   onManageSeats: function() {
-    const roomId = this.data.currentRoom.id;
+    const roomId = this.data.currentRoom.room_id;
+    // console.log(this.data.currentRoom.room_id);
     // 确保目标页面存在
     wx.navigateTo({
       url: '/pages/seats-management/index?roomid=' + roomId
@@ -273,7 +277,7 @@ onCloseDetails: function() {
               if (res.statusCode === 200) {
                 wx.showToast({ title: '删除成功' });
                 this.loadStudyRooms();
-                this.setData({ showRoomDetails: false });
+                this.setData({ showModal: false });
               } else {
                 this.handleError('删除失败');
               }

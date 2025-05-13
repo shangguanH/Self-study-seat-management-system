@@ -1,158 +1,116 @@
+const { requestWithToken } = require('../../utils/request');
 Page({
   data: {
     roomId: '',
     seats: [],
-    showSeatDetails: false,
-    selectedSeat: null,
-    showEditModal: false,
-    editMode: false,
-    editSeatData: {
-      id: '',
-      status: 'available',
-      hasOutlet: false,
-      maxReservationTime: 60,
-      statusIndex: 0
+    showSeatModal: false,
+    isEditMode: false,
+    showBatchModal: false,
+    batchForm: {
+      prefix: '',
+      count: 0
     },
-    statusOptions: ['可用', '不可用']
+
+    statuTypes: [
+      { id: 0, name: '可用' },
+      { id: 1, name: '不可用' },
+      { id: 2, name: '占用中' },
+      { id: 3, name: '暂离'  }
+    ],
+
+    seatForm: {
+      seat_name: '',
+      has_socket: 0,
+    },
   },
 
-  onLoad(options) {
+  onLoad:function(options) {
     // 判断是否传递了 roomId 参数
-    if (options.id) {
-      this.setData({
-        roomId: options.id
-      });
-      this.loadSeatsByRoomId(options.id);
-    } else {
-      // 如果没有传递 roomId，则加载所有座位
-      this.loadAllSeats();
-    }
-  },
-
-  // 加载所有座位数据
-  loadAllSeats() {
-    // 使用预定义的座位数据
-    const mockSeats = [
-      {
-        id: 'A1',
-        roomId: 'room1',
-        status: 'available',
-        hasOutlet: true,
-        maxReservationTime: 120,
-        reservationStatus: '已预约'
-      },
-      {
-        id: 'A2',
-        roomId: 'room1',
-        status: 'unavailable',
-        hasOutlet: false,
-        maxReservationTime: 60,
-        reservationStatus: null
-      },
-      {
-        id: 'B1',
-        roomId: 'room2',
-        status: 'available',
-        hasOutlet: true,
-        maxReservationTime: 90,
-        reservationStatus: null
-      },
-      {
-        id: 'B2',
-        roomId: 'room2',
-        status: 'available',
-        hasOutlet: false,
-        maxReservationTime: 120,
-        reservationStatus: '已预约'
-      }
-    ];
-
-    // 将预定义的座位数据设置到页面
-    this.setData({
-      seats: mockSeats
-    });
+    if (options.roomid) {
+      this.setData({roomId: options.roomid});
+      this.loadSeatsByRoomId(options.roomid);
+    } 
   },
 
   // 加载特定自习室的座位数据
-  loadSeatsByRoomId(roomId) {
-    const db = wx.cloud.database();
-    db.collection('seats')
-      .where({
-        roomId: roomId
-      })
-      .get()
-      .then(res => {
-        this.setData({
-          seats: res.data
-        });
-      })
-      .catch(err => {
-        console.error('查询座位失败', err);
-        wx.showToast({
-          title: '加载座位失败',
-          icon: 'none'
-        });
-      });
-  },
-
-  // 查看座位详情
-  onViewSeatDetails(e) {
-    const seatId = e.currentTarget.dataset.id;
-    const seat = this.data.seats.find(item => item.id === seatId);
-    if (seat) {
-      this.setData({
-        showSeatDetails: true,
-        selectedSeat: seat
-      });
-    } else {
-      wx.showToast({
-        title: '座位信息不存在',
-        icon: 'none'
-      });
-    }
+  loadSeatsByRoomId:function(roomId) {
+    requestWithToken({
+      url: `/api/v1.0/admin/rooms/${roomId}/seats`,
+      method: 'GET',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          this.setData({ seats: res.data.seats });
+          console.log(res.data.seats);
+        } else {
+          wx.showToast({ title: '加载座位失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '加载座位失败', icon: 'none' });
+      },
+      complete: () => {
+        this.setData({ loading: false });
+      }
+    });
   },
 
   // 关闭弹窗
   onCloseModal() {
     this.setData({
-      showSeatDetails: false,
-      showEditModal: false
+      showSeatModal: false,
+      isEditMode: false
     });
   },
 
   // 编辑座位
-  onEditSeat() {
-    const { selectedSeat } = this.data;
+  onEditSeat(e) {
+    const seatId = e.currentTarget.dataset.id;
+    const seat = this.data.seats.find(s => s.seat_id === seatId);
+    if (!seat) return;
+    console.log(seat);
     this.setData({
-      showSeatDetails: false,
-      showEditModal: true,
-      editMode: true,
-      editSeatData: {
-        id: selectedSeat.id,
-        status: selectedSeat.status,
-        hasOutlet: selectedSeat.hasOutlet,
-        maxReservationTime: selectedSeat.maxReservationTime,
-        statusIndex: selectedSeat.status === 'available' ? 0 : 1
+      isEditMode: true,
+      showSeatModal: true,
+      seatForm: {
+        seat_name: seat.seat_name,
+        has_socket: seat.has_socket,
+        status: seat.status,
+        seat_id: seat.seat_id,
       }
     });
   },
-
+// 处理类型选择变化
+onStatusChange: function(e) {
+  const statusIndex = e.detail.value;
+  this.setData({
+    'seatForm.status': statusIndex
+  });
+},
   // 删除座位
   onDeleteSeat() {
-    const { selectedSeat } = this.data;
+    const { seatForm, roomId } = this.data;
+    
     wx.showModal({
       title: '确认删除',
-      content: `确定要删除座位 ${selectedSeat.id} 吗？`,
+      content: `确定要删除座位 ${seatForm.seat_name} 吗？`,
       success: (res) => {
         if (res.confirm) {
-          const newSeats = this.data.seats.filter(item => item.id !== selectedSeat.id);
-          this.setData({
-            seats: newSeats,
-            showSeatDetails: false
-          });
-          wx.showToast({
-            title: '删除成功',
-            icon: 'success'
+          requestWithToken({
+            url: `/api/v1.0/admin/seats/${seatForm.seat_id}`,
+            method: 'DELETE',
+            success: (res) => {
+              console.log(res);
+              if (res.statusCode === 200) {
+                wx.showToast({ title: '删除成功', icon: 'success' });
+                this.setData({ showSeatModal: false });
+                this.loadSeatsByRoomId(roomId);
+              } else {
+                wx.showToast({ title: '删除失败', icon: 'none' });
+              }
+            },
+            fail: () => {
+              wx.showToast({ title: '请求失败', icon: 'none' });
+            }
           });
         }
       }
@@ -162,105 +120,146 @@ Page({
   // 添加新座位
   onAddSeat() {
     this.setData({
-      showEditModal: true,
-      editMode: false,
-      editSeatData: {
-        id: '',
-        status: 'available',
-        hasOutlet: false,
-        maxReservationTime: 60,
-        statusIndex: 0
+      isEditMode: false,
+      showSeatModal: true,
+      seatForm: {
+        seat_name: '',
+        has_socket: 0,
       }
     });
   },
-
-  // 保存座位信息
-  onSaveSeat() {
-    const { editMode, editSeatData } = this.data;
-    const { id, status, hasOutlet, maxReservationTime } = editSeatData;
-
-    if (!id) {
-      wx.showToast({
-        title: '请输入座位ID',
-        icon: 'none'
-      });
+  
+  onAddSeatConfirm() {
+    const { roomId, seatForm } = this.data;
+    if (!seatForm.seat_name) {
+      wx.showToast({ title: '请输入座位name', icon: 'none' });
       return;
     }
-
-    if (!maxReservationTime) {
-      wx.showToast({
-        title: '请输入最长预约时间',
-        icon: 'none'
-      });
-      return;
-    }
-
-    if (!editMode && this.data.seats.some(item => item.id === id)) {
-      wx.showToast({
-        title: '座位ID已存在',
-        icon: 'none'
-      });
-      return;
-    }
-
-    let newSeats = [...this.data.seats];
-    if (editMode) {
-      // 编辑现有座位
-      const index = newSeats.findIndex(item => item.id === id);
-      if (index !== -1) {
-        newSeats[index] = {
-          ...newSeats[index],
-          status,
-          hasOutlet,
-          maxReservationTime
-        };
+  
+    requestWithToken({
+      url: `/api/v1.0/admin/seats`,
+      method: 'POST',
+      data: {
+        room_id: roomId,
+        seat_name: seatForm.seat_name,
+        has_socket: seatForm.has_socket ? 1 : 0,
+      },
+      success: (res) => {
+        if (res.statusCode === 201) {
+          wx.showToast({ title: '添加成功', icon: 'success' });
+          this.setData({ showSeatModal: false });
+          this.loadSeatsByRoomId(roomId);
+        } else {
+          wx.showToast({ title: '添加失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '请求失败', icon: 'none' });
       }
-    } else {
-      // 添加新座位
-      newSeats.push({
-        id,
-        status,
-        hasOutlet,
-        maxReservationTime,
-        reservationStatus: null
-      });
-    }
-
-    this.setData({
-      seats: newSeats,
-      showEditModal: false
-    });
-
-    wx.showToast({
-      title: editMode ? '修改成功' : '添加成功',
-      icon: 'success'
     });
   },
-
+  
+  onUpdateSeat() {
+    const { roomId, seatForm } = this.data;
+    requestWithToken({
+      url: `/api/v1.0/admin/seats/${seatForm.seat_id}`,
+      method: 'PATCH',
+      data: {
+        has_socket: seatForm.has_socket ? 1 : 0,
+       seat_name: seatForm.seat_name,
+       status: seatForm.status 
+      },
+      success: (res) => {
+        if (res.statusCode === 200) {
+          wx.showToast({ title: '修改成功', icon: 'success' });
+          this.setData({ showSeatModal: false });
+          this.loadSeatsByRoomId(roomId);
+        } else {
+          wx.showToast({ title: '修改失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '请求失败', icon: 'none' });
+      }
+    });
+  },
+  
   // 表单输入处理
-  onInputId(e) {
+  onInputChange(e) {
+    const field = e.currentTarget.dataset.field;
     this.setData({
-      'editSeatData.id': e.detail.value
+      [`seatForm.${field}`]: e.detail.value
+    });
+  },
+  
+  onSwitchChange(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({
+      [`seatForm.${field}`]: e.detail.value
+    });
+  },
+  onConfirmSeat() {
+    if (this.data.isEditMode) {
+      this.onUpdateSeat();
+    } else {
+      this.onAddSeatConfirm();
+    }
+  },
+  onAddManySeat() {
+    this.setData({
+      showBatchModal: true,
+      batchForm: { prefix: '', count: 0 }
     });
   },
 
-  onStatusChange(e) {
-    const index = e.detail.value;
+  // 输入更新
+  onBatchInput(e) {
+    const field = e.currentTarget.dataset.field;
+    const value = e.detail.value;
     this.setData({
-      'editSeatData.statusIndex': index,
-      'editSeatData.status': index === 0 ? 'available' : 'unavailable'
+      [`batchForm.${field}`]: value
     });
   },
 
-  onOutletChange(e) {
+  // 关闭弹窗
+  onCloseBatchModal() {
     this.setData({
-      'editSeatData.hasOutlet': e.detail.value
+      showBatchModal: false
     });
   },
 
-  onTimeChange(e) {
-    this.setData({
-      'editSeatData.maxReservationTime': e.detail.value
+  // 确认一键添加
+onConfirmBatchAdd() {
+  const { roomId} = this.data;
+  const { prefix, count } = this.data.batchForm;
+  if (!prefix || !count || parseInt(count) <= 0) {
+    wx.showToast({ title: '请输入有效的前缀和数量', icon: 'none' });
+    return;
+  }
+  for(let i = 1;i <= parseInt(count); i++) {
+    console.log(roomId);
+    requestWithToken({
+      url: `/api/v1.0/admin/seats`,
+      method: 'POST',
+      data: {
+        room_id: roomId,
+        seat_name: prefix + i,
+        has_socket: 0,
+      },
+      success: (res) => {
+        if (res.statusCode === 201) {
+          wx.showToast({ title: '添加成功', icon: 'success' });
+        } else {
+          wx.showToast({ title: '添加失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '请求失败', icon: 'none' });
+      }
     });
+    this.setData({ showBatchModal: false });
+    this.loadSeatsByRoomId(roomId);
+  }
+
   }
 });

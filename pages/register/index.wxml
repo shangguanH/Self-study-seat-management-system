@@ -41,6 +41,22 @@
     <input class="input-field" type="number" placeholder="请输入手机号" bindinput="onInputPhone" />
   </view>
 
+  <!-- 学号输入框 -->
+  <view class="input-group">
+    <text>学号：</text>
+    <input class="input-field" type="number" placeholder="请输入学号" bindinput="onInputStudentID" />
+  </view>
+
+  <view class="input-group row-align">
+    <text class="label">类型：</text>
+    <picker class="picker-flex" mode="selector" range="{{roomTypes}}" range-key="name" 
+            value="{{type}}" bindchange="onTypeChange">
+      <view class="picker-inner">
+        {{roomTypes[type].name}}
+      </view>
+  </picker>
+</view>
+
   <!-- 注册按钮 -->
   <view class="register-btn">
     <button bindtap="onRegister">注册</button>

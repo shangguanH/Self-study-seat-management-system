@@ -7,7 +7,7 @@
   <view class="list">
     <block wx:for="{{studyRooms}}" wx:key="id">
       <view class="room-item" bindtap="onViewRoomDetails" data-id="{{item.room_id}}">
-        <text>{{item.name}} - {{item.status === 1 ? '开放' : '关闭'}}</text>
+        <text>{{item.room_name}} - {{item.status === 1 ? '开放' : '关闭'}}</text>
       </view>
     </block>
     <view wx:if="{{!loading && studyRooms.length === 0}}"        class="empty-tip">
@@ -24,8 +24,8 @@
       <scroll-view scroll-y class="modal-body">
         <view class="form-item">
           <text class="label">名称</text>
-          <input type="text" placeholder="请输入名称" value="{{currentRoom.name}}" 
-                 bindinput="onInputChange" data-field="currentRoom.name" />
+          <input type="text" placeholder="请输入名称" value="{{currentRoom.room_name}}" 
+                 bindinput="onInputChange" data-field="currentRoom.room_name" />
         </view>
         <view class="form-item">
           <text class="label">位置</text>
@@ -59,6 +59,10 @@
               <view class="picker">{{currentRoom.close_time || '结束时间'}}</view>
             </picker>
           </view>
+        </view>
+        <view class="form-item">
+          <text class="label">开放</text>
+          <switch checked="{{seatForm.status}}" bindchange="onSwitchChange" data-field="status" />
         </view>
       </scroll-view>
       <view class="modal-footer">

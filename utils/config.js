@@ -1,3 +1,4 @@
-const TEST_URL = "http://172.22.5.110:8080";
+const TEST_URL = "http://119.3.252.225:8080";
+const Real_URL = "http://119.3.252.225:8080";
 
-module.exports = {TEST_URL};
+module.exports = {TEST_URL, Real_URL};

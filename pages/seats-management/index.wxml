@@ -7,84 +7,78 @@
   <view class="operator">
     <button class="add-seat-btn" bindtap="onAddSeat">添加新座位
     </button>
+    <button class="add-many-btn" bindtap="onAddManySeat">一键添加
+    </button>
   </view>
-  
-  <!-- 座位列表 -->
-  <view class="seats-list">
-    <block wx:for="{{seats}}" wx:key="id">
-      <view class="seat-item" bindtap="onViewSeatDetails" data-id="{{item.id}}">
-        <text class="seat-id">座位 ID: {{item.id}}</text>
-      </view>
-    </block>
+  <scroll-view scroll-y class="scroll-area">
+  <view class="seat-list-wrapper">
+    <view wx:if="{{seats.length == 0}}" class="empty-tip">暂无座位数据</view>
+      <block wx:if="{{seats.length > 0 }}" wx:for="{{seats}}" wx:key="seat_id">
+        <view class="seat-item" bindtap="onEditSeat" data-id="{{item.seat_id}}">
+          <text>座位 - {{item.seat_name}}</text>
+        </view>
+      </block>
   </view>
-
-  <!-- 座位详情弹窗 -->
-  <view class="modal" wx:if="{{showSeatDetails}}">
+  </scroll-view>
+  <!-- 统一的座位弹窗 -->
+  <view class="modal" wx:if="{{showSeatModal}}">
     <view class="modal-content">
       <view class="modal-header">
-        <text class="modal-title">座位详情</text>
-        <button class="close-btn" bindtap="onCloseModal">×</button>
+        <text>{{isEditMode ? '座位详情' : '新增座位'}}</text>
       </view>
-      <view class="modal-body">
-        <view class="detail-item">
-          <text>座位 ID:</text>
-          <text>{{selectedSeat.id}}</text>
+      <scroll-view scroll-y class="modal-body">
+        <view class="form-item">
+          <text class="label">座位 name</text>
+          <input type="text" placeholder="请输入座位名称" value="{{seatForm.seat_name}}"
+                bindinput="onInputChange" data-field="seat_name" />
         </view>
-        <view class="detail-item">
-          <text>状态:</text>
-          <text>{{selectedSeat.status === 'available' ? '可用' : '不可用'}}</text>
+        <view class="form-item">
+          <text class="label">插座</text>
+          <switch checked="{{seatForm.has_socket}}" bindchange="onSwitchChange" data-field="has_socket" />
         </view>
-        <view class="detail-item">
-          <text>插座:</text>
-          <text>{{selectedSeat.hasOutlet ? '有' : '无'}}</text>
-        </view>
-        <view class="detail-item">
-          <text>最长预约时间:</text>
-          <text>{{selectedSeat.maxReservationTime}} 分钟</text>
-        </view>
-        <view class="detail-item">
-          <text>当前预约状态:</text>
-          <text>{{selectedSeat.reservationStatus || '未预约'}}</text>
-        </view>
-      </view>
-      <view class="modal-footer">
-        <button class="edit-btn" bindtap="onEditSeat">编辑</button>
-        <button class="delete-btn" bindtap="onDeleteSeat">删除</button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 座位编辑弹窗 -->
-  <view class="modal" wx:if="{{showEditModal}}">
-    <view class="modal-content">
-      <view class="modal-header">
-        <text class="modal-title">{{editMode ? '编辑座位' : '添加新座位'}}</text>
-        <button class="close-btn" bindtap="onCloseModal">×</button>
-      </view>
-      <view class="modal-body">
-        <view class="form-group">
-          <text>座位 ID:</text>
-          <input class="input" type="text" placeholder="请输入座位ID" value="{{editSeatData.id}}" bindinput="onInputId" disabled="{{editMode}}" />
-        </view>
-        <view class="form-group">
-          <text>状态:</text>
-          <picker mode="selector" range="{{statusOptions}}" bindchange="onStatusChange" value="{{editSeatData.statusIndex}}">
-            <view class="picker">{{statusOptions[editSeatData.statusIndex]}}</view>
+        <view wx:if="{{isEditMode}}" class="form-item">
+          <text class="label">当前状态</text>
+          <picker mode="selector" range="{{statuTypes}}" range-key="name" 
+                  value="{{seatForm.status}}" bindchange="onStatusChange" data-field="status">
+            <view class="picker">
+              {{statuTypes[seatForm.status].name}}
+            </view>
           </picker>
         </view>
-        <view class="form-group">
-          <text>是否有插座:</text>
-          <switch checked="{{editSeatData.hasOutlet}}" bindchange="onOutletChange" />
-        </view>
-        <view class="form-group">
-          <text>最长预约时间(分钟):</text>
-          <input class="input" type="number" placeholder="请输入最长预约时间" value="{{editSeatData.maxReservationTime}}" bindinput="onTimeChange" />
-        </view>
-      </view>
+      </scroll-view>
+
       <view class="modal-footer">
-        <button class="cancel-btn" bindtap="onCloseModal">取消</button>
-        <button class="save-btn" bindtap="onSaveSeat">{{editMode ? '保存' : '添加'}}</button>
+        <button class="btn delete" wx:if="{{isEditMode}}" bindtap="onDeleteSeat">删除</button>
+        <button class="btn cancel" bindtap="onCloseModal">取消</button>
+        <button class="btn confirm" bindtap="onConfirmSeat">
+          {{isEditMode ? '保存' : '确认'}}
+        </button>
       </view>
     </view>
   </view>
+
+  <!-- 一键添加座位的弹窗 -->
+  <!-- 一键添加弹窗 -->
+<view class="modal" wx:if="{{showBatchModal}}">
+  <view class="modal-content">
+    <view class="modal-header">
+      <text>一键添加座位</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="label">座位前缀</text>
+        <input type="text" placeholder="例如 A" value="{{batchForm.prefix}}" bindinput="onBatchInput" data-field="prefix" />
+      </view>
+      <view class="form-item">
+        <text class="label">座位数量</text>
+        <input type="number" placeholder="例如 10" value="{{batchForm.count}}" bindinput="onBatchInput" data-field="count" />
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn cancel" bindtap="onCloseBatchModal">取消</button>
+      <button class="btn confirm" bindtap="onConfirmBatchAdd">确认</button>
+    </view>
+  </view>
+</view>
+
 </view>

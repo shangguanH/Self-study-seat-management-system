@@ -66,11 +66,8 @@ onLogin: function () {
           title: '登录成功',
           icon: 'success'
         });
-        
         // Store user information if needed
-        if (res.statusCode == 200) {
-          wx.setStorageSync('token', res.data.token || '');
-        }
+        wx.setStorageSync('token', res.data.token || '');
         // Redirect based on identity
         if (identity === 'student') {
           wx.navigateTo({

@@ -41,7 +41,7 @@ Page({
     
     // 新增自习室表单数据
     currentRoom: {
-      name: '',
+      room_name: '',
       location: '',
       type: 0,        // 默认通用类型
       status: 1,      // 默认开放
@@ -76,12 +76,12 @@ Page({
       method: 'GET',
       success: (res) => {
         if (res.statusCode === 200) {
+          console.log(res.data.rooms);
           this.setData({
             studyRooms: res.data.rooms || [],
             loading: false
           });
         } else {
-          console.log(res.statusCode);
           this.handleError('加载失败');
         }
       },
@@ -112,10 +112,11 @@ onTimeChange: function(e) {
 },
 
 // 处理状态选择变化
-onStatusChange: function(e) {
-  const { room } = e.currentTarget.dataset;
-  const statusIndex = e.detail.value;
-  this.setData({'currentRoom.status': statusIndex});
+onSwitchChange(e) {
+  const field = e.currentTarget.dataset.field;
+  this.setData({
+    [`currentRoom.${field}`]: e.detail.value
+  });
 },
 
 // 关闭详情弹窗
@@ -131,7 +132,7 @@ onCloseDetails: function() {
       showModal: true,
       isEditMode: false,
       currentRoom: {
-        name: '',
+        room_name: '',
         location: '',
         type: 0,
         status: 1,
@@ -180,7 +181,7 @@ onCloseDetails: function() {
   onSaveStudyRoom: function() {
     const { currentRoom } = this.data;
     
-    if (!currentRoom.name || !currentRoom.location || !currentRoom.capacity) {
+    if (!currentRoom.room_name || !currentRoom.location || !currentRoom.capacity) {
       wx.showToast({
         title: '请填写所有字段',
         icon: 'none'
@@ -192,8 +193,8 @@ onCloseDetails: function() {
     const payload = {
       ...currentRoom,
       capacity: parseInt(currentRoom.capacity),
-      type: currentRoom.type,
-      status: currentRoom.status,
+      type: parseInt( currentRoom.type),
+      status: currentRoom.status ? 1 : 0,
       open_time: timeStrToTimestamp(currentRoom.open_time),
       close_time: timeStrToTimestamp(currentRoom.close_time)
     };
@@ -225,11 +226,11 @@ onCloseDetails: function() {
   onUpdateRoom: function() {
     const { currentRoom } = this.data;
     const payload = {
-      name:currentRoom.name,
+      room_name:currentRoom.room_name,
       location:currentRoom.location,
       capacity: parseInt(currentRoom.capacity),
       type: parseInt(currentRoom.type),
-      status: parseInt(currentRoom.status),
+      status: currentRoom.status ? 1 : 0,
       open_time: timeStrToTimestamp(currentRoom.open_time),
       close_time: timeStrToTimestamp(currentRoom.close_time)
     };
@@ -267,7 +268,7 @@ onCloseDetails: function() {
     const { currentRoom } = this.data;
     wx.showModal({
       title: '确认删除',
-      content: `确定删除自习室 ${currentRoom.name} 吗？`,
+      content: `确定删除自习室 ${currentRoom.room_name} 吗？`,
       success: (res) => {
         if (res.confirm) {
           requestWithToken({

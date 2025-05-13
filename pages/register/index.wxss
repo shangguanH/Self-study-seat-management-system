@@ -58,3 +58,35 @@
 .register-btn button:hover {
   background-color: #45a049;
 }
+
+/* 横向布局 */
+.row-align {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 0;
+}
+
+/* 左侧文字 */
+.label {
+  width: 150rpx;
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* picker 占据剩余宽度 */
+.picker-flex {
+  flex: 1;
+}
+
+/* picker 显示区域样式，重点设置背景和边框 */
+.picker-inner {
+  padding: 20rpx;
+  background-color: #ffffff; /* 白色底 */
+  border: 1px solid #dcdcdc; /* 灰色边框 */
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+.picker-inner:active {
+  background-color: #f0f0f0;
+}

@@ -64,7 +64,7 @@
   <view class="modal-dialog history-modal-dialog">
     <view class="modal-title history-modal-title">历史预约记录</view>
     <view class="modal-content history-modal-content">
-      <scroll-view scroll-y="true" style="max-height: 60vh;"> {/* Adjust max-height as needed */}
+      <scroll-view scroll-y="true" style="max-height: 60vh;">
         <view wx:if="{{reservationHistory && reservationHistory.length > 0}}">
           <view class="history-item" wx:for="{{reservationHistory}}" wx:key="bookingTimestamp" wx:for-item="histItem">
             <view class="history-details">

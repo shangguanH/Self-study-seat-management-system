@@ -38,11 +38,13 @@ onLogin: function () {
     });
     return;
   }
-
-  // Show loading indicator
-  wx.showLoading({
-    title: '登录中...',
+  wx.navigateTo({
+    url: '/pages/index/index',
   });
+  // Show loading indicator
+  // wx.showLoading({
+  //   title: '登录中...',
+  // });
 
   // Determine the appropriate API endpoint based on identity
   const apiUrl = TEST_URL +  (identity == 'student' 

@@ -1,65 +1,142 @@
-<view class="room-info">
-  <text>自习室: {{roomName}}</text>
+<view class="container">
+  <!-- 加载中和错误提示 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <view class="loading-icon"></view>
+    <text class="loading-text">加载中...</text>
   </view>
-
-<view class="seat-grid">
-  <view
-    wx:for="{{seats}}"
-    wx:key="id"
-    class="seat {{item.status}}"
-    data-index="{{index}}"
-    bindtap="onSeatClick"
-  >
-    {{index + 1}}
+  
+  <view class="error-container" wx:elif="{{errorMessage}}">
+    <icon type="warn" size="40" color="#f5222d"></icon>
+    <text class="error-text">{{errorMessage}}</text>
   </view>
-</view>
-
-<view class="modal-mask" wx:if="{{showReservationModal}}" catchtouchmove="preventTouchMove">
-  <view class="modal-dialog">
-    <view class="modal-title">预约座位 {{selectedSeatIndex !== null ? selectedSeatIndex + 1 : ''}}</view>
-    <view class="modal-content">
+  
+  <!-- 主要内容 - 自习室信息和座位 -->
+  <view class="room-content" wx:else>
+    <!-- 自习室信息 -->
+    <view class="room-info-card">
+      <view class="room-info-header">
+        <text class="room-title">{{roomDetails.name}}</text>
+        <text class="room-status {{roomDetails.status === 1 ? 'status-open' : 'status-closed'}}">
+          {{roomDetails.status === 1 ? '开放中' : '已关闭'}}
+        </text>
+      </view>
+      
+      <view class="room-details">
+        <view class="detail-item">
+          <text class="detail-label">位置：</text>
+          <text class="detail-value">{{roomDetails.location}}</text>
+        </view>
+        
+        <view class="detail-item">
+          <text class="detail-label">类型：</text>
+          <text class="detail-value">{{roomDetails.typeName}}</text>
+        </view>
+        
+        <view class="detail-item">
+          <text class="detail-label">开放时间：</text>
+          <text class="detail-value">{{roomDetails.open_time}}:00 - {{roomDetails.close_time}}:00</text>
+        </view>
+        
+        <view class="detail-item">
+          <text class="detail-label">可用座位：</text>
+          <text class="detail-value">{{availableSeats}} / {{totalSeats}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 用户当前预约状态提示 -->
+    <view class="user-reservation-notice" wx:if="{{hasReservation && userSeatIndex !== null}}">
+      <icon type="success" size="16" color="#52c41a"></icon>
+      <text>您已预约座位 {{userSeatIndex + 1}}（{{userReservationDate}} {{userReservationStartTime}}-{{userReservationEndTime}}）</text>
+    </view>
+    
+    <view class="user-reservation-notice warning" wx:elif="{{hasReservation && userSeatIndex === null}}">
+      <icon type="warn" size="16" color="#faad14"></icon>
+      <text>您已在其他自习室有预约，无法在本自习室预约</text>
+    </view>
+    
+    <!-- 座位预览 -->
+    <view class="seats-section">
+      <view class="section-title">座位预览</view>
+      
+      <view class="seats-legend">
+        <view class="legend-item">
+          <view class="legend-color available"></view>
+          <text>可用</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color reserved"></view>
+          <text>已预约</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color user-reserved"></view>
+          <text>您的预约</text>
+        </view>
+      </view>
+      
+      <view class="seats-grid">
+        <view 
+          wx:for="{{seats}}" 
+          wx:key="id"
+          class="seat {{item.status}}" 
+          bindtap="onSeatClick" 
+          data-index="{{index}}">
+          {{index + 1}}
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 预约选择模态框 -->
+  <view class="modal-mask" wx:if="{{showReservationModal}}"></view>
+  <view class="modal-container" wx:if="{{showReservationModal}}">
+    <view class="modal-header">
+      <text class="modal-title">预约座位 {{selectedSeatIndex + 1}}</text>
+    </view>
+    
+    <view class="modal-body">
       <view class="form-item">
-        <text>日期:</text>
-        <picker mode="date" value="{{selectedDate}}" start="{{minDate}}" bindchange="bindDateChange">
-          <view class="picker-value">
-            {{selectedDate}}
-          </view>
+        <text class="form-label">日期：</text>
+        <picker mode="date" value="{{selectedDate}}" start="{{minDate}}" end="{{maxDate}}" bindchange="bindDateChange">
+          <view class="picker">{{selectedDate}}</view>
         </picker>
       </view>
+      
       <view class="form-item">
-        <text>开始时间:</text>
-        <picker mode="time" value="{{startTime}}" start="00:00" end="23:59" bindchange="bindStartTimeChange">
-           <view class="picker-value">
-            {{startTime}}
-          </view>
+        <text class="form-label">开始时间：</text>
+        <picker mode="time" value="{{startTime}}" start="{{selectedDate === minDate ? minStartTime : '00:00'}}" end="23:59" bindchange="bindStartTimeChange">
+          <view class="picker">{{startTime}}</view>
         </picker>
       </view>
-       <view class="form-item">
-        <text>结束时间:</text>
-        <picker mode="time" value="{{endTime}}" start="00:00" end="23:59" bindchange="bindEndTimeChange">
-          <view class="picker-value">
-            {{endTime}}
-          </view>
+      
+      <view class="form-item">
+        <text class="form-label">结束时间：</text>
+        <picker mode="time" value="{{endTime}}" start="{{startTime}}" end="23:59" bindchange="bindEndTimeChange">
+          <view class="picker">{{endTime}}</view>
         </picker>
       </view>
     </view>
+    
     <view class="modal-footer">
-      <button class="modal-button cancel" bindtap="cancelReservationSelection">取消</button>
-      <button class="modal-button confirm" bindtap="confirmReservation">确定预约</button>
+      <button class="btn btn-cancel" bindtap="cancelReservationSelection">取消</button>
+      <button class="btn btn-confirm" bindtap="confirmReservation">确认预约</button>
+    </view>
+  </view>
+  
+  <!-- 取消确认模态框 -->
+  <view class="modal-mask" wx:if="{{showCancelModal}}"></view>
+  <view class="modal-container" wx:if="{{showCancelModal}}">
+    <view class="modal-header">
+      <text class="modal-title">取消预约</text>
+    </view>
+    
+    <view class="modal-body">
+      <text class="confirm-message">{{cancelModalMessage}}</text>
+    </view>
+    
+    <view class="modal-footer">
+      <button class="btn btn-cancel" bindtap="cancelCancellationAction">返回</button>
+      <button class="btn btn-danger" bindtap="confirmCancellation">确认取消</button>
     </view>
   </view>
 </view>
-
-<view class="modal-mask" wx:if="{{showCancelModal}}" catchtouchmove="preventTouchMove">
-    <view class="modal-dialog">
-        <view class="modal-title">确认操作</view>
-        <view class="modal-content">
-            <text>{{cancelModalMessage}}</text>
-        </view>
-        <view class="modal-footer">
-            <button class="modal-button cancel" bindtap="cancelCancellationAction">返回</button>
-            <button class="modal-button confirm" bindtap="confirmCancellation">确认取消</button>
-        </view>
-    </view>
-</view>
-

@@ -1,35 +1,204 @@
-/* application/index.wxss */
+/* 整体容器 */
 .container {
-  padding: 20px;
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
 
-.filters {
-  margin-bottom: 20px;
+/* 筛选区域样式 */
+.filter-section {
+  background-color: #fff;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.filter-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  color: #333;
 }
 
 .filter-item {
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
 }
 
-input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.filter-label {
+  font-size: 28rpx;
+  color: #666;
+  display: block;
+  margin-bottom: 10rpx;
 }
 
+.seat-input {
+  border: 1rpx solid #ddd;
+  border-radius: 6rpx;
+  padding: 10rpx;
+  width: 200rpx;
+  font-size: 28rpx;
+}
+
+.picker {
+  border: 1rpx solid #ddd;
+  border-radius: 6rpx;
+  padding: 10rpx 20rpx;
+  width: 400rpx;
+  font-size: 28rpx;
+  background-color: #fff;
+  position: relative;
+}
+
+.picker::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 10rpx solid transparent;
+  border-right: 10rpx solid transparent;
+  border-top: 10rpx solid #999;
+  position: absolute;
+  right: 20rpx;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 自习室列表样式 */
 .room-list {
-  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.list-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  color: #333;
 }
 
 .room-item {
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border-bottom: 1rpx solid #eee;
+  padding: 20rpx 0;
 }
 
-.room-item text {
-  display: block;
-  margin-top: 5px;
+.room-item:last-child {
+  border-bottom: none;
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+}
+
+.room-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.room-location {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.room-info {
+  margin-bottom: 15rpx;
+}
+
+.info-item {
+  display: flex;
+  margin-bottom: 10rpx;
+  font-size: 28rpx;
+}
+
+.info-label {
+  color: #666;
+  width: 160rpx;
+}
+
+.info-value {
+  color: #333;
+  flex: 1;
+}
+
+.room-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+}
+
+/* 类型标签颜色 */
+.type-tag {
+  background-color: #e8f4ff;
+  color: #1890ff;
+}
+
+.type-0 {
+  background-color: #f0f5ff;
+  color: #2f54eb;
+}
+
+.type-1 {
+  background-color: #e6fffb;
+  color: #13c2c2;
+}
+
+.type-2 {
+  background-color: #fcffe6;
+  color: #a0d911;
+}
+
+.status-tag {
+  color: #fff;
+}
+
+.status-1 {
+  background-color: #52c41a;
+}
+
+.status-0 {
+  background-color: #f5222d;
+}
+
+.room-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15rpx;
+}
+
+.reserve-btn {
+  font-size: 28rpx;
+  color: #fff;
+  background-color: #1890ff;
+  border-radius: 30rpx;
+  padding: 10rpx 30rpx;
+  line-height: 1.5;
+  border: none;
+  box-shadow: 0 2rpx 10rpx rgba(24, 144, 255, 0.2);
+}
+
+.reserve-btn::after {
+  border: none;
+}
+
+/* 空列表提示 */
+.empty-list {
+  padding: 80rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
 }

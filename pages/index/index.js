@@ -348,7 +348,7 @@ Page({
 
     // 构建目标 URL (只传递 roomName)
     // Use encodeURIComponent for room names with special characters
-    const targetUrl = `/pages/reserve/index?roomName=${encodeURIComponent(historyItem.roomName)}`;
+    const targetUrl = `/pages/reserve/index?roomName=${encodeURIComponent(historyItem.roomName)}&&roomId=${encodeURIComponent(historyItem.roomId)}`;
     console.log('Navigating to:', targetUrl);
 
     // 跳转到指定自习室的预约页面
@@ -385,6 +385,7 @@ Page({
   // 加载并处理当前预约信息
   loadCurrentReservation: function() {
       const currentReservation = wx.getStorageSync('userReservation');
+      //wx.clearStorageSync('userReservation');
       console.log('从缓存加载当前预约:', currentReservation);
 
       if (currentReservation && typeof currentReservation.seatIndex === 'number' && currentReservation.roomName) {
@@ -513,10 +514,12 @@ Page({
      }
  },
 
-
+  
   // 加载并处理历史记录
   // showToastIfEmpty: boolean, 如果为 true 且历史为空，则显示提示
   loadHistoryData: function(showToastIfEmpty = false) {
+    //清理历史记录
+    //wx.clearStorageSync('reservationHistory');
     let history = wx.getStorageSync('reservationHistory') || [];
     if (!Array.isArray(history)) {
       console.warn("缓存中的 reservationHistory 不是数组，已重置。");
@@ -527,18 +530,18 @@ Page({
 
     // --- DEBUG: 添加测试数据逻辑 ---
     // (保持不变，但确保测试数据包含 signInCode, isSignedIn, isTemporarilyAway, temporaryLeaveStartTime 等字段以模拟真实场景)
-    const testFlag = 'add_test_history_done_v3'; // Increment version if structure changes
-    if (history.length === 0 && wx.getStorageSync(testFlag) !== true) {
-      console.log('无历史记录，添加测试数据...');
-      history = [
-         { date: '2025-04-24', startTime: '14:00', endTime:"16:00", roomName: '静思阁', seatIndex: 5, bookingTimestamp: '2025-04-24T13:55:00.000Z', id: 'hist1', isSignedIn: true, isTemporarilyAway: false, signInCode: '1111' },
-         { date: '2025-04-25', startTime: '09:00', endTime:"11:00", roomName: '博学轩', seatIndex: 1, bookingTimestamp: '2025-04-25T08:45:10.123Z', id: 'hist2', isSignedIn: true, isTemporarilyAway: false, signInCode: '2222' },
-         { date: '2025-04-23', startTime: '19:00', endTime:"21:00", roomName: '静思阁', seatIndex: 2, bookingTimestamp: '2025-04-23T18:30:05.000Z', id: 'hist3', isSignedIn: true, isTemporarilyAway: false, signInCode: '3333' }
-      ];
-      wx.setStorageSync('reservationHistory', history);
-      wx.setStorageSync(testFlag, true); // Mark that test data has been added
-      console.log('Test history data added and saved.');
-    }
+    // const testFlag = 'add_test_history_done_v3'; // Increment version if structure changes
+    // if (history.length === 0 && wx.getStorageSync(testFlag) !== true) {
+    //   console.log('无历史记录，添加测试数据...');
+    //   history = [
+    //      { date: '2025-04-24', startTime: '14:00', endTime:"16:00", roomName: '静思阁', seatIndex: 5, bookingTimestamp: '2025-04-24T13:55:00.000Z', id: 'hist1', isSignedIn: true, isTemporarilyAway: false, signInCode: '1111' },
+    //      { date: '2025-04-25', startTime: '09:00', endTime:"11:00", roomName: '博学轩', seatIndex: 1, bookingTimestamp: '2025-04-25T08:45:10.123Z', id: 'hist2', isSignedIn: true, isTemporarilyAway: false, signInCode: '2222' },
+    //      { date: '2025-04-23', startTime: '19:00', endTime:"21:00", roomName: '静思阁', seatIndex: 2, bookingTimestamp: '2025-04-23T18:30:05.000Z', id: 'hist3', isSignedIn: true, isTemporarilyAway: false, signInCode: '3333' }
+    //   ];
+    //   wx.setStorageSync('reservationHistory', history);
+    //   wx.setStorageSync(testFlag, true); // Mark that test data has been added
+    //   console.log('Test history data added and saved.');
+    // }
     // --- 结束 DEBUG ---
 
     // Handle empty history case

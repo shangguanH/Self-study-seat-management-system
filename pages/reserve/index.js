@@ -10,191 +10,263 @@ const formatDate = (date) => {
 };
 const currentDate = formatDate(today);
 
+const getDateAfterDays = (days) => {
+  const today = new Date();
+  // 创建一个新日期对象，将当前日期加上指定的天数
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + days);
+  
+  // 格式化日期
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  return formatDate(futureDate);
+};
+// 获取三天后的日期
+const threeDaysLater = getDateAfterDays(3);
+
+const formatTime = (date) => {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
+const currentTime = formatTime(today);
+
 // --- Data Simulation ---
-// In a real app, this data would come from a backend API call
+// 在真实应用中，这些数据将来自后端API调用
 const allRoomsData = {
-  '自习室A': { name: '自习室A', totalSeats: 12, hasCharging: true, isQuiet: true },
-  '自习室B': { name: '自习室B', totalSeats: 8, hasCharging: false, isQuiet: false },
-  '自习室C': { name: '自习室C', totalSeats: 10, hasCharging: true, isQuiet: true },
-  '自习室D': { name: '自习室D', totalSeats: 15, hasCharging: false, isQuiet: true },
-  '自习室E': { name: '自习室E', totalSeats: 20, hasCharging: true, isQuiet: false },
+  1: { 
+    room_id: 1, 
+    name: '自习室A', 
+    location: '图书馆一楼', 
+    status: 1, 
+    type: 0, // 通用
+    seat_number: '50', 
+    capacity: '50',
+    open_time: 8, 
+    close_time: 22
+  },
+  2: { 
+    room_id: 2, 
+    name: '自习室B', 
+    location: '图书馆二楼', 
+    status: 1, 
+    type: 1, // 计算机学院
+    seat_number: '40', 
+    capacity: '40',
+    open_time: 8, 
+    close_time: 22
+  },
+  3: { 
+    room_id: 3, 
+    name: '自习室C', 
+    location: '教学楼三楼', 
+    status: 1, 
+    type: 2, // 物理学院
+    seat_number: '30', 
+    capacity: '30',
+    open_time: 9, 
+    close_time: 21
+  }
 };
 
-// Function to simulate fetching room details and seat status by name
-function fetchRoomDetailsAndSeats(roomName) {
+// 模拟根据ID获取自习室详情和座位状态
+function fetchRoomDetailsAndSeats(roomId) {
   return new Promise((resolve, reject) => {
-    console.log(`Simulating fetch for: ${roomName}`);
-    const roomDetails = allRoomsData[roomName];
+    console.log(`模拟获取自习室ID: ${roomId}`);
+    const roomDetails = allRoomsData[roomId];
 
     if (!roomDetails) {
-      console.error(`Room data not found for "${roomName}" in simulation.`);
-      setTimeout(() => reject(new Error(`Room "${roomName}" not found`)), 100); // Simulate delay
+      console.error(`在模拟数据中未找到ID为"${roomId}"的自习室数据。`);
+      setTimeout(() => reject(new Error(`自习室ID"${roomId}"不存在`)), 100); // 模拟延迟
       return;
     }
 
-    // Simulate initial seat statuses (replace with real API call)
-    const seats = Array.from({ length: roomDetails.totalSeats }, (_, index) => {
-      // Simple simulation: mark some seats as reserved by others
-      const isReservedByOther = Math.random() < 0.3; // 30% chance reserved by someone else
+    // 模拟初始座位状态（实际应用中替换为真实API调用）
+    const totalSeats = parseInt(roomDetails.capacity);
+    const seats = Array.from({ length: totalSeats }, (_, index) => {
+      // 简单模拟：将一些座位标记为被他人预约
+      const isReservedByOther = Math.random() < 0.3; // 30%的几率被他人预约
       return {
         id: index,
         status: isReservedByOther ? 'reserved' : 'available', // 'available', 'reserved', 'userReserved'
       };
     });
 
-    // Calculate simulated available seats (excluding user's own potential reservation)
+    // 计算可用座位数（不包括用户可能的预约）
     const availableCount = seats.filter(s => s.status === 'available').length;
 
     const fullData = {
       ...roomDetails,
       seats: seats,
-      availableSeats: availableCount // Calculated available seats
+      availableSeats: availableCount // 计算可用座位数
     };
 
-    console.log(`Simulated data fetched for ${roomName}:`, fullData);
-    // Simulate network delay
-    setTimeout(() => resolve(fullData), 400); // Simulate 400ms delay
+    console.log(`已模拟获取自习室数据 ${roomDetails.name}:`, fullData);
+    // 模拟网络延迟
+    setTimeout(() => resolve(fullData), 400); // 模拟400ms延迟
   });
 }
-// --- End Data Simulation ---
+// --- 模拟数据结束 ---
 
+// 根据自习室类型获取类型名称
+function getRoomTypeName(type) {
+  const typeNames = {
+    0: '通用',
+    1: '计算机学院',
+    2: '物理学院'
+  };
+  return typeNames[type] || '未知类型';
+}
 
 Page({
   data: {
-    roomName: '', // Set from options
-    roomDetails: null, // Stores fetched details { name, totalSeats, hasCharging, isQuiet }
-    totalSeats: 0, // Derived from fetched data
-    availableSeats: 0, // Derived from fetched data (or real-time API)
-    hasCharging: false, // Derived from fetched data
-    isQuiet: false, // Derived from fetched data
-    seats: [], // Seat status array, populated after fetch
+    roomId: '', // 从URL参数获取
+    roomName: '', // 从URL参数获取
+    roomDetails: null, // 存储获取的详情
+    totalSeats: 0, // 从获取的数据派生
+    availableSeats: 0, // 从获取的数据派生
+    seats: [], // 座位状态数组，在获取数据后填充
 
-    // --- Loading & Error State ---
+    // --- 加载和错误状态 ---
     isLoading: true,
     errorMessage: '',
 
-    // --- User's Current Reservation Info ---
-    userSeatIndex: null, // Current user's confirmed seat index in THIS room
+    // --- 用户当前预约信息 ---
+    userSeatIndex: null, // 当前用户在此自习室的确认座位索引
     userReservationDate: null,
     userReservationStartTime: null,
     userReservationEndTime: null,
-    hasReservation: false, // Does user have a reservation in *any* room? (Set based on storage)
-    // Note: We might refine hasReservation to be room-specific if needed, but global check is simpler first
+    hasReservation: false, // 用户是否在任何自习室有预约？
 
-    // --- Reservation Selection Modal State ---
+    // --- 预约选择模态框状态 ---
     showReservationModal: false,
-    selectedSeatIndex: null, // Index of seat being booked via modal
+    selectedSeatIndex: null, // 通过模态框预订的座位索引
     selectedDate: currentDate,
     startTime: '09:00',
     endTime: '10:00',
     minDate: currentDate,
-    // maxDate: '...',
+    maxDate: threeDaysLater,
+    minStartTime: currentTime,
 
-    // --- Cancellation Confirmation Modal State ---
+    // --- 取消确认模态框状态 ---
     showCancelModal: false,
     cancelModalMessage: '',
-    seatIndexToCancel: null, // Index of seat being cancelled via modal
+    seatIndexToCancel: null, // 通过模态框取消的座位索引
   },
 
   onLoad: function(options) {
-    console.log('Reserve page onLoad options:', options);
-    // 1. Get roomName (primary identifier)
-    // Use decodeURIComponent in case the name has special characters passed via URL
+    console.log('预约页面加载选项:', options);
+    // 1. 获取roomId和roomName（主要标识符）
+    const roomId = options.roomId ? options.roomId : null;
     const roomName = options.roomName ? decodeURIComponent(options.roomName) : null;
 
-    if (!roomName) {
-      console.error('Error: Missing roomName parameter!');
+    if (!roomId) {
+      console.error('错误: 缺少roomId参数!');
       this.setData({
         isLoading: false,
-        errorMessage: '无法加载自习室信息：缺少房间名称参数。'
+        errorMessage: '无法加载自习室信息：缺少自习室ID参数。'
       });
       wx.showToast({ title: '页面加载失败', icon: 'error', duration: 2500 });
-      // Optionally navigate back
-      // wx.navigateBack();
       return;
     }
 
-    // 2. Set initial state (loading and the known roomName)
+    // 2. 设置初始状态（加载中和已知的roomId和roomName）
     this.setData({
-      roomName: roomName,
+      roomId: roomId,
+      roomName: roomName || '',
       isLoading: true,
       errorMessage: '',
-      selectedDate: currentDate, // Ensure defaults are set
-      minDate: currentDate,     // Ensure defaults are set
+      selectedDate: currentDate, // 确保默认值已设置
+      minDate: currentDate,     
+      maxDate: threeDaysLater,
+      minStartTime: currentTime,
     });
 
-    // 3. Fetch room details and seat status based on roomName
-    this.loadRoomData(roomName);
+    // 3. 根据roomId获取自习室详情和座位状态
+    this.loadRoomData(roomId);
   },
 
-  // --- Core Data Loading Function ---
-  loadRoomData: function(roomName) {
-    fetchRoomDetailsAndSeats(roomName)
+  // --- 核心数据加载功能 ---
+  loadRoomData: function(roomId) {
+    fetchRoomDetailsAndSeats(roomId)
       .then(fetchedData => {
-        // 4. Data fetched successfully
-        let localSeats = fetchedData.seats; // Initial seats from fetch (available/reserved)
+        // 4. 数据获取成功
+        let localSeats = fetchedData.seats; // 获取的初始座位（可用/已预约）
         let currentUserReservation = wx.getStorageSync('userReservation');
         let userSeatIndex = null;
         let userReservationDate = null;
         let userReservationStartTime = null;
         let userReservationEndTime = null;
-        let hasReservationInThisRoom = false; // Is the stored reservation for THIS room?
+        let hasReservationInThisRoom = false; // 存储的预约是否为此自习室？
 
-        // 5. Check if the stored reservation belongs to THIS room
-        if (currentUserReservation && currentUserReservation.roomName === roomName && currentUserReservation.seatIndex !== undefined) {
-          console.log(`User has reservation in this room (${roomName}), seat index: ${currentUserReservation.seatIndex}`);
+        // 5. 检查存储的预约是否属于此自习室
+        if (currentUserReservation && currentUserReservation.roomId == roomId && currentUserReservation.seatIndex !== undefined) {
+          console.log(`用户在此自习室(${roomId})有预约，座位索引: ${currentUserReservation.seatIndex}`);
           userSeatIndex = currentUserReservation.seatIndex;
           userReservationDate = currentUserReservation.date;
           userReservationStartTime = currentUserReservation.startTime;
           userReservationEndTime = currentUserReservation.endTime;
           hasReservationInThisRoom = true;
 
-          // Mark the user's seat in the localSeats array
+          // 在localSeats数组中标记用户的座位
           if (localSeats[userSeatIndex]) {
             localSeats[userSeatIndex].status = 'userReserved';
           } else {
-            console.warn("Stored userSeatIndex is out of bounds for fetched seats:", userSeatIndex);
-            // This indicates inconsistency, maybe clear the storage?
+            console.warn("存储的userSeatIndex超出了获取的座位范围:", userSeatIndex);
+            // 这表示不一致，可能需要清除存储？
             wx.removeStorageSync('userReservation');
             hasReservationInThisRoom = false;
-            userSeatIndex = null; // Reset index
+            userSeatIndex = null; // 重置索引
           }
-        } else if (currentUserReservation && currentUserReservation.roomName !== roomName) {
-            console.log(`User has reservation in another room: ${currentUserReservation.roomName}`);
-            // Keep hasReservation true globally, but false for this room
+        } else if (currentUserReservation && currentUserReservation.roomId != roomId) {
+            console.log(`用户在另一个自习室有预约: ID=${currentUserReservation.roomId}, 名称=${currentUserReservation.roomName}`);
+            // 全局保持hasReservation为true，但对此自习室为false
         }
 
-        // 6. Update page data with fetched and processed info
+        // 获取自习室类型名称
+        const typeName = getRoomTypeName(fetchedData.type);
+
+        // 6. 使用获取和处理的信息更新页面数据
         this.setData({
-          roomDetails: { // Store static details
+          roomDetails: { // 存储静态详情
+            room_id: fetchedData.room_id,
             name: fetchedData.name,
-            totalSeats: fetchedData.totalSeats,
-            hasCharging: fetchedData.hasCharging,
-            isQuiet: fetchedData.isQuiet,
+            location: fetchedData.location,
+            status: fetchedData.status,
+            type: fetchedData.type,
+            typeName: typeName,
+            seat_number: fetchedData.seat_number,
+            capacity: fetchedData.capacity,
+            open_time: fetchedData.open_time,
+            close_time: fetchedData.close_time,
           },
-          totalSeats: fetchedData.totalSeats,
-          availableSeats: fetchedData.availableSeats, // Use calculated available count
-          hasCharging: fetchedData.hasCharging,
-          isQuiet: fetchedData.isQuiet,
-          seats: localSeats, // Set the final seats array
+          totalSeats: parseInt(fetchedData.capacity),
+          availableSeats: fetchedData.availableSeats, // 使用计算的可用数量
+          seats: localSeats, // 设置最终的座位数组
           isLoading: false,
           errorMessage: '',
-          // Set user reservation details specific to THIS room
-          hasReservation: !!currentUserReservation, // Global check: Does user have *any* reservation?
+          // 设置特定于此自习室的用户预约详情
+          hasReservation: !!currentUserReservation, // 全局检查：用户是否有任何预约？
           userSeatIndex: hasReservationInThisRoom ? userSeatIndex : null,
           userReservationDate: hasReservationInThisRoom ? userReservationDate : null,
           userReservationStartTime: hasReservationInThisRoom ? userReservationStartTime : null,
           userReservationEndTime: hasReservationInThisRoom ? userReservationEndTime : null,
         });
-        console.log("Final data set after load and check:", this.data);
+        console.log("加载和检查后设置的最终数据:", this.data);
 
       })
       .catch(error => {
-        // 7. Handle fetch error
-        console.error('Failed to load room data:', error);
+        // 7. 处理获取错误
+        console.error('加载自习室数据失败:', error);
         this.setData({
           isLoading: false,
-          errorMessage: `加载自习室 "${roomName}" 信息失败：${error.message}`
+          errorMessage: `加载自习室ID "${roomId}" 信息失败：${error.message}`
         });
         wx.showToast({ title: '数据加载失败', icon: 'none' });
       });
@@ -202,53 +274,58 @@ Page({
 
   // --- 点击座位事件 ---
   onSeatClick: function(e) {
-    if (this.data.isLoading) return; // Don't process clicks while loading
+    if (this.data.isLoading) return; // 加载时不处理点击
 
     const seatIndex = e.currentTarget.dataset.index;
     const seat = this.data.seats[seatIndex];
-    const currentUserReservation = wx.getStorageSync('userReservation'); // Check global reservation status again
+    const currentUserReservation = wx.getStorageSync('userReservation'); // 再次检查全局预约状态
 
     if (!seat) {
-      console.error("Clicked on invalid seat index:", seatIndex);
+      console.error("点击了无效的座位索引:", seatIndex);
       return;
     }
 
     if (seat.status === 'available') {
-      // --- Situation 1: Seat is available ---
+      // --- 情况1: 座位可用 ---
       if (currentUserReservation) {
-        // If user already has a reservation anywhere, prevent booking another
+        // 如果用户已经在任何地方有预约，阻止再次预约
+        let roomTypeName = '';
+        if (currentUserReservation.roomType !== undefined) {
+          roomTypeName = getRoomTypeName(currentUserReservation.roomType);
+        }
+        
         wx.showToast({
-          title: `您已在 ${currentUserReservation.roomName} 预约了座位 ${currentUserReservation.seatIndex + 1} (${currentUserReservation.date} ${currentUserReservation.startTime}-${currentUserReservation.endTime})`,
+          title: `您已在 ${currentUserReservation.roomName} (${roomTypeName}) 预约了座位 ${currentUserReservation.seatIndex + 1} (${currentUserReservation.date} ${currentUserReservation.startTime}-${currentUserReservation.endTime})`,
           icon: 'none',
-          duration: 3500, // Longer duration
+          duration: 3500, // 更长时间
         });
       } else {
-        // No current reservation, open the reservation details modal
+        // 没有当前预约，打开预约详情模态框
         this.setData({
           showReservationModal: true,
           selectedSeatIndex: seatIndex,
-          // Reset time selections to defaults when opening modal
+          // 打开模态框时重置时间选择为默认值
           selectedDate: currentDate,
           startTime: '09:00',
           endTime: '10:00',
         });
       }
     } else if (seat.status === 'userReserved') {
-      // --- Situation 2: Clicked on own reserved seat in THIS room ---
-       if (this.data.userSeatIndex === seatIndex) { // Double check it's the correct user seat
+      // --- 情况2: 点击了此自习室中自己预约的座位 ---
+       if (this.data.userSeatIndex === seatIndex) { // 再次检查它是否是正确的用户座位
             this.setData({
                 showCancelModal: true,
                 cancelModalMessage: `取消预约座位 ${seatIndex + 1} (${this.data.userReservationDate} ${this.data.userReservationStartTime}-${this.data.userReservationEndTime}) 吗?`,
                 seatIndexToCancel: seatIndex
             });
        } else {
-            // Should not happen if logic is correct, but safety check
-            console.warn("Clicked userReserved seat, but index doesn't match stored userSeatIndex.");
+            // 如果逻辑正确，应该不会发生，但安全检查
+            console.warn("点击了userReserved座位，但索引与存储的userSeatIndex不匹配。");
              wx.showToast({ title: `您已预约此座位`, icon: 'none' });
        }
 
     } else if (seat.status === 'reserved') {
-        // --- Situation 3: Clicked on a seat reserved by someone else ---
+        // --- 情况3: 点击了他人预约的座位 ---
          wx.showToast({
           title: `座位 ${seatIndex + 1} 已被他人预约`,
           icon: 'none',
@@ -257,7 +334,7 @@ Page({
     }
   },
 
-  // --- Reservation Selection Modal Handlers ---
+  // --- 预约选择模态框处理程序 ---
   bindDateChange: function(e) {
     this.setData({
       selectedDate: e.detail.value
@@ -276,19 +353,19 @@ Page({
     });
   },
 
-  // Close the reservation selection modal without confirming
+  // 不确认关闭预约选择模态框
   cancelReservationSelection: function() {
     this.setData({
       showReservationModal: false,
-      selectedSeatIndex: null, // Clear the selected seat index
+      selectedSeatIndex: null, // 清除选定的座位索引
     });
   },
 
-  // Confirm the reservation from the selection modal
+  // 从选择模态框确认预约
   confirmReservation: function() {
-    const { selectedSeatIndex, selectedDate, startTime, endTime, seats, roomName } = this.data;
+    const { roomId, roomDetails, selectedSeatIndex, selectedDate, startTime, endTime, seats } = this.data;
 
-    // Basic Validation
+    // 基本验证
     if (selectedSeatIndex === null || !selectedDate || !startTime || !endTime) {
         wx.showToast({ title: '请选择完整的预约信息', icon: 'none' });
         return;
@@ -297,65 +374,62 @@ Page({
         wx.showToast({ title: '结束时间必须晚于开始时间', icon: 'none' });
         return;
     }
-    // --- Add more validation if needed (e.g., check against backend again) ---
 
-    // --- Assume validation passed ---
+    // --- 假设验证通过 ---
     const newSeats = [...seats];
     if (!newSeats[selectedSeatIndex] || newSeats[selectedSeatIndex].status !== 'available') {
          wx.showToast({ title: '该座位已被预约或无效', icon: 'none' });
          this.setData({ showReservationModal: false, selectedSeatIndex: null });
-         // Optionally re-fetch data
-         // this.loadRoomData(this.data.roomName);
          return;
     }
 
     newSeats[selectedSeatIndex].status = 'userReserved';
 
-    // --- Prepare details for current reservation and history ---
+    // --- 准备当前预约和历史的详情 ---
     const reservationDetails = {
+        roomId: roomId,
+        roomName: roomDetails.name,
+        roomType: roomDetails.type,
         seatIndex: selectedSeatIndex,
         date: selectedDate,
         startTime: startTime,
         endTime: endTime,
-        roomName: roomName, // Store room name
-        bookingTimestamp: new Date().toISOString(), // Add booking timestamp
-        // Add other relevant details if needed, e.g., user ID
-        isSignedIn: false, // Default status for new reservations
-        isTemporarilyAway: false, // Default status
+        bookingTimestamp: new Date().toISOString(), // 添加预约时间戳
+        isSignedIn: false, // 新预约的默认状态
+        isTemporarilyAway: false, // 默认状态
     };
 
-    // --- 1. Store the CURRENT reservation details ---
+    // --- 1. 存储当前预约详情 ---
     wx.setStorageSync('userReservation', reservationDetails);
 
-    // --- 2. Add to Reservation History ---
+    // --- 2. 添加到预约历史 ---
     try {
         let history = wx.getStorageSync('reservationHistory') || [];
         if (!Array.isArray(history)) {
-            console.warn("Reservation history in storage was not an array. Resetting.");
+            console.warn("存储中的预约历史不是数组。重置。");
             history = [];
         }
         history.push(reservationDetails);
         wx.setStorageSync('reservationHistory', history);
-        console.log('Reservation added to history:', reservationDetails);
-        console.log('Updated History Length:', history.length);
+        console.log('预约已添加到历史:', reservationDetails);
+        console.log('更新后的历史长度:', history.length);
 
     } catch (e) {
-        console.error("Failed to update reservation history:", e);
+        console.error("更新预约历史失败:", e);
     }
-    // --- End of History Update ---
+    // --- 历史更新结束 ---
 
-
-    // Update page data
+    // 更新页面数据
     this.setData({
       seats: newSeats,
-      hasReservation: true, // Now user has a reservation globally
-      userSeatIndex: selectedSeatIndex, // Reservation is in this room
+      hasReservation: true, // 现在用户全局有预约
+      userSeatIndex: selectedSeatIndex, // 预约在此自习室
       userReservationDate: selectedDate,
       userReservationStartTime: startTime,
       userReservationEndTime: endTime,
-      showReservationModal: false, // Close the selection modal
-      selectedSeatIndex: null,    // Clear temporary selection index
-      // Update availableSeats based on calculation (or leave as is if API handles it)
+      showReservationModal: false, // 关闭选择模态框
+      selectedSeatIndex: null,    // 清除临时选择索引
+      // 根据计算更新可用座位数
       availableSeats: newSeats.filter(s => s.status === 'available').length,
     });
 
@@ -366,9 +440,9 @@ Page({
     });
   },
 
-  // --- Cancellation Confirmation Modal Handlers ---
+  // --- 取消确认模态框处理程序 ---
 
-  // Close the cancellation confirmation modal
+  // 关闭取消确认模态框
   closeCancelModal: function() {
       this.setData({
           showCancelModal: false,
@@ -377,37 +451,33 @@ Page({
       });
   },
 
-  // Confirm the cancellation
+  // 确认取消
   confirmCancellation: function() {
       const { seatIndexToCancel, seats } = this.data;
-       if (seatIndexToCancel === null) return; // Should not happen
+       if (seatIndexToCancel === null) return; // 不应该发生
 
       const newSeats = [...seats];
 
-      // Only allow cancellation if it's the user's reserved seat
+      // 只允许取消用户预约的座位
       if (newSeats[seatIndexToCancel] && newSeats[seatIndexToCancel].status === 'userReserved') {
         newSeats[seatIndexToCancel].status = 'available';
 
-        // Remove the current reservation from local storage
+        // 从本地存储中移除当前预约
         wx.removeStorageSync('userReservation');
-        console.log("User reservation removed from storage.");
+        console.log("用户预约已从存储中删除。");
 
-        // --- Optional: Add cancellation event to history or update existing record? ---
-        // This depends on requirements. Usually, history shows completed/past reservations.
-        // Cancelling might just mean removing the *active* reservation.
-
-        // Update page data
+        // 更新页面数据
         this.setData({
             seats: newSeats,
-            hasReservation: false, // User no longer has an active reservation
+            hasReservation: false, // 用户不再有活动预约
             userSeatIndex: null,
             userReservationDate: null,
             userReservationStartTime: null,
             userReservationEndTime: null,
-            showCancelModal: false, // Close the cancellation modal
+            showCancelModal: false, // 关闭取消模态框
             cancelModalMessage: '',
             seatIndexToCancel: null,
-            // Update available seats count
+            // 更新可用座位数
             availableSeats: newSeats.filter(s => s.status === 'available').length,
         });
 
@@ -418,15 +488,14 @@ Page({
         });
 
       } else {
-          console.error("Attempting to cancel a seat that is not 'userReserved' or doesn't exist.");
+          console.error("尝试取消一个不是'userReserved'或不存在的座位。");
           wx.showToast({ title: '取消失败，状态异常', icon: 'none'});
-          this.closeCancelModal(); // Close modal anyway
+          this.closeCancelModal(); // 无论如何关闭模态框
       }
   },
 
-  // Cancel the cancellation action (just close modal)
+  // 取消取消操作（只关闭模态框）
   cancelCancellationAction: function() {
     this.closeCancelModal();
   },
-
 });

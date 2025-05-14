@@ -8,7 +8,7 @@
       <text class="status-title">当前预约状态:</text>
       <block wx:if="{{hasReservation && userReservationDetails}}">
          <text class="status-text">
-             已预约: {{userReservationDetails.roomName}} - 座位 {{userReservationDetails.seatIndex + 1}} ({{userReservationDetails.date}} {{userReservationDetails.startTime}}-{{userReservationDetails.endTime}})
+             已预约: {{userReservationDetails.room_name}} - 座位 {{userReservationDetails.seat_name}} ({{userReservationDetails.start_time}}-{{userReservationDetails.end_time}})
          </text>
          <text class="status-text" wx:if="{{!isSignedIn}}">请点击下方签到按钮进行签到。</text>
          <text class="status-text" wx:if="{{isSignedIn && !isTemporarilyAway}}">已签到。</text>
@@ -72,7 +72,7 @@
               <view><text class="detail-label">座位:</text> <text>{{histItem.displaySeat}}</text></view>
               <view><text class="detail-label">日期:</text> <text>{{histItem.displayDate}}</text></view>
               <view><text class="detail-label">时间:</text> <text>{{histItem.displayTime}}</text></view>
-               <view class="booking-time"><text>预订于: {{histItem.displayBookingTime}}</text></view>
+               <!-- <view class="booking-time"><text>预订于: {{histItem.displayBookingTime}}</text></view> -->
             </view>
             <view class="history-actions">
               <button

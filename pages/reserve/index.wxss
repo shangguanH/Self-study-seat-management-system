@@ -142,6 +142,7 @@
 
 .seats-legend {
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: 24rpx;
   padding-bottom: 20rpx;
   border-bottom: 1rpx solid #f0f0f0;
@@ -151,6 +152,7 @@
   display: flex;
   align-items: center;
   margin-right: 30rpx;
+  margin-bottom: 10rpx;
   font-size: 24rpx;
   color: #666;
 }
@@ -177,6 +179,12 @@
   border: 1rpx solid #52c41a;
 }
 
+/* 新增：电源图例 */
+.legend-color.socket {
+  background-color: #722ed1;
+  border: 1rpx solid #531dab;
+}
+
 .seats-grid {
   display: flex;
   flex-wrap: wrap;
@@ -194,6 +202,7 @@
   font-size: 28rpx;
   font-weight: bold;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+  position: relative; /* 为电源图标添加相对定位 */
 }
 
 .seat.available {
@@ -212,6 +221,18 @@
   background-color: #f6ffed;
   color: #52c41a;
   border: 2rpx solid #b7eb8f;
+}
+
+/* 新增：电源插座标记 */
+.seat.with-socket::after {
+  content: "";
+  position: absolute;
+  right: 5rpx;
+  top: 5rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background-color: #722ed1;
+  border-radius: 50%;
 }
 
 /* 模态框样式 */
@@ -316,4 +337,60 @@
   color: #fff;
 }
 
-  
+/* 新增：座位详情模态框样式 */
+.seat-detail-modal .modal-body {
+  padding: 20rpx 24rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 28rpx;
+}
+
+.detail-value.status-available {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+.detail-value.status-unavailable,
+.detail-value.status-reserved {
+  color: #ff7a45;
+  font-weight: bold;
+}
+
+.detail-value.status-userReserved {
+  color: #52c41a;
+  font-weight: bold;
+}
+
+.reservation-section {
+  margin-top: 24rpx;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.reservation-item {
+  background-color: #f9f9f9;
+  border: 1rpx solid #f0f0f0;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  margin-bottom: 12rpx;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.empty-reservation {
+  padding: 30rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+}

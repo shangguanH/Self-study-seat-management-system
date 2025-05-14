@@ -1,4 +1,4 @@
-// /pages/reserve/index.js
+const { requestWithToken } = require('../../utils/request');
 
 // Get today's date in YYYY-MM-DD format
 const today = new Date();
@@ -32,87 +32,9 @@ const threeDaysLater = getDateAfterDays(3);
 const formatTime = (date) => {
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  return `${hours}:${minutes}`;
 };
 const currentTime = formatTime(today);
-
-// --- Data Simulation ---
-// 在真实应用中，这些数据将来自后端API调用
-const allRoomsData = {
-  1: { 
-    room_id: 1, 
-    name: '自习室A', 
-    location: '图书馆一楼', 
-    status: 1, 
-    type: 0, // 通用
-    seat_number: '50', 
-    capacity: '50',
-    open_time: 8, 
-    close_time: 22
-  },
-  2: { 
-    room_id: 2, 
-    name: '自习室B', 
-    location: '图书馆二楼', 
-    status: 1, 
-    type: 1, // 计算机学院
-    seat_number: '40', 
-    capacity: '40',
-    open_time: 8, 
-    close_time: 22
-  },
-  3: { 
-    room_id: 3, 
-    name: '自习室C', 
-    location: '教学楼三楼', 
-    status: 1, 
-    type: 2, // 物理学院
-    seat_number: '30', 
-    capacity: '30',
-    open_time: 9, 
-    close_time: 21
-  }
-};
-
-// 模拟根据ID获取自习室详情和座位状态
-function fetchRoomDetailsAndSeats(roomId) {
-  return new Promise((resolve, reject) => {
-    console.log(`模拟获取自习室ID: ${roomId}`);
-    const roomDetails = allRoomsData[roomId];
-
-    if (!roomDetails) {
-      console.error(`在模拟数据中未找到ID为"${roomId}"的自习室数据。`);
-      setTimeout(() => reject(new Error(`自习室ID"${roomId}"不存在`)), 100); // 模拟延迟
-      return;
-    }
-
-    // 模拟初始座位状态（实际应用中替换为真实API调用）
-    const totalSeats = parseInt(roomDetails.capacity);
-    const seats = Array.from({ length: totalSeats }, (_, index) => {
-      // 简单模拟：将一些座位标记为被他人预约
-      const isReservedByOther = Math.random() < 0.3; // 30%的几率被他人预约
-      return {
-        id: index,
-        status: isReservedByOther ? 'reserved' : 'available', // 'available', 'reserved', 'userReserved'
-      };
-    });
-
-    // 计算可用座位数（不包括用户可能的预约）
-    const availableCount = seats.filter(s => s.status === 'available').length;
-
-    const fullData = {
-      ...roomDetails,
-      seats: seats,
-      availableSeats: availableCount // 计算可用座位数
-    };
-
-    console.log(`已模拟获取自习室数据 ${roomDetails.name}:`, fullData);
-    // 模拟网络延迟
-    setTimeout(() => resolve(fullData), 400); // 模拟400ms延迟
-  });
-}
-// --- 模拟数据结束 ---
 
 // 根据自习室类型获取类型名称
 function getRoomTypeName(type) {
@@ -122,6 +44,150 @@ function getRoomTypeName(type) {
     2: '物理学院'
   };
   return typeNames[type] || '未知类型';
+}
+
+// 时间戳转换函数
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '未设置';
+  
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hour = date.getHours().toString().padStart(2, '0');
+  const minute = date.getMinutes().toString().padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hour}:${minute}`;
+}
+
+// 将日期时间字符串转换为毫秒时间戳
+function dateTimeToTimestamp(dateStr, timeStr) {
+  // 格式: YYYY-MM-DD HH:MM
+  const fullTimeStr = `${dateStr} ${timeStr}:00`;
+  return new Date(fullTimeStr).getTime();
+}
+
+// 获取自习室详情和座位状态的函数
+async function fetchRoomDetailsAndSeats(roomId) {
+  try {
+    console.log(`获取自习室ID: ${roomId}`);
+    
+    // 首先获取所有自习室列表
+    return new Promise((resolve, reject) => {
+      requestWithToken({
+        url: '/api/v1.0/student/rooms',
+        method: 'GET',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            console.log('自习室列表API响应成功');
+            const rooms = res.data.rooms || [];
+            
+            // 从列表中找到当前自习室
+            const roomDetails = rooms.find(room => 
+              room.room_id && room.room_id.toString() === roomId.toString()
+            );
+            
+            if (!roomDetails) {
+              console.error(`在列表中未找到ID为"${roomId}"的自习室`);
+              reject(new Error(`自习室ID"${roomId}"不存在`));
+              return;
+            }
+            
+            // 添加类型名称
+            roomDetails.typeName = getRoomTypeName(roomDetails.type);
+            
+            // 格式化时间
+            if (roomDetails.open_time) {
+              roomDetails.formattedOpenTime = formatTimestamp(roomDetails.open_time);
+            }
+            if (roomDetails.close_time) {
+              roomDetails.formattedCloseTime = formatTimestamp(roomDetails.close_time);
+            }
+            
+            // 获取该自习室的座位状态
+            requestWithToken({
+              url: `/api/v1.0/student/rooms/${roomId}/seats`,
+              method: 'GET',
+              success: (seatsRes) => {
+                if (seatsRes.statusCode === 200) {
+                  console.log('座位数据API响应成功');
+                  
+                  // 确保seats是一个数组
+                  const seats = seatsRes.data.seats || [];
+                  
+                  // 映射座位状态到前端需要的格式
+                  const mappedSeats = seats.map((seat, index) => {
+                    // 处理ordering_list，转换时间戳为可读格式
+                    let orderingList = [];
+                    if (Array.isArray(seat.ordering_list) && seat.ordering_list.length > 0) {
+                      orderingList = seat.ordering_list.map(order => {
+                        return {
+                          ...order,
+                          formattedStartTime: order.start_time ? formatTimestamp(order.start_time) : '未设置',
+                          formattedEndTime: order.end_time ? formatTimestamp(order.end_time) : '未设置'
+                        };
+                      });
+                    }
+                    
+                    return {
+                      id: seat.seat_id || index,
+                      name: seat.name || `座位${index + 1}`,
+                      status: seat.status === 0 ? 'available' : 
+                              seat.status === 1 ? 'unavailable' : 
+                              seat.status === 2 ? 'reserved' : 
+                              seat.status === 3 ? 'userReserved' : 
+                              seat.status === 4 ? 'temporarilyAway' : 'unknown',
+                      has_socket: seat.has_socket || 0, // 0代表没有，1代表有
+                      ordering_list: orderingList,
+                      rawOrderingList: seat.ordering_list || [] // 保存原始数据
+                    };
+                  });
+                  
+                  // 计算可用座位数（取API数据或根据座位列表计算）
+                  const availableCount = roomDetails.available_seats !== undefined ? 
+                                        roomDetails.available_seats : 
+                                        mappedSeats.filter(s => s.status === 'available').length;
+                  
+                  // 确定总座位数
+                  const totalSeats = roomDetails.total_seats || 
+                                     roomDetails.capacity || 
+                                     roomDetails.seat_number || 
+                                     mappedSeats.length;
+                  
+                  const fullData = {
+                    ...roomDetails,
+                    seats: mappedSeats,
+                    availableSeats: availableCount,
+                    totalSeats: totalSeats
+                  };
+                  
+                  console.log(`已获取自习室数据 ${roomDetails.name}`);
+                  resolve(fullData);
+                } else {
+                  console.error('获取座位数据失败:', seatsRes.statusCode);
+                  reject(new Error(`获取座位数据失败: ${seatsRes.statusCode}`));
+                }
+              },
+              fail: (error) => {
+                console.error('获取座位数据请求失败:', error);
+                reject(new Error('获取座位数据网络错误'));
+              }
+            });
+          } else {
+            console.error('获取自习室列表失败:', res.statusCode);
+            reject(new Error(`获取自习室列表失败: ${res.statusCode}`));
+          }
+        },
+        fail: (error) => {
+          console.error('获取自习室列表请求失败:', error);
+          reject(new Error('获取自习室列表网络错误'));
+        }
+      });
+    });
+  } catch (error) {
+    console.error(`获取自习室(ID:${roomId})数据失败:`, error);
+    throw error;
+  }
 }
 
 Page({
@@ -139,6 +205,7 @@ Page({
 
     // --- 用户当前预约信息 ---
     userSeatIndex: null, // 当前用户在此自习室的确认座位索引
+    userSeatId: null, // 当前用户在此自习室的座位ID
     userReservationDate: null,
     userReservationStartTime: null,
     userReservationEndTime: null,
@@ -148,8 +215,8 @@ Page({
     showReservationModal: false,
     selectedSeatIndex: null, // 通过模态框预订的座位索引
     selectedDate: currentDate,
-    startTime: '09:00',
-    endTime: '10:00',
+    startTime: currentTime,
+    endTime: currentTime,
     minDate: currentDate,
     maxDate: threeDaysLater,
     minStartTime: currentTime,
@@ -158,6 +225,10 @@ Page({
     showCancelModal: false,
     cancelModalMessage: '',
     seatIndexToCancel: null, // 通过模态框取消的座位索引
+    
+    // --- 座位详情模态框状态 ---
+    showSeatDetailModal: false,
+    seatDetailInfo: null, // 显示座位详情信息
   },
 
   onLoad: function(options) {
@@ -192,47 +263,66 @@ Page({
     this.loadRoomData(roomId);
   },
 
+  // --- 页面刷新 ---
+  onPullDownRefresh: function() {
+    console.log('下拉刷新触发');
+    if (this.data.roomId) {
+      this.loadRoomData(this.data.roomId);
+    }
+    wx.stopPullDownRefresh();
+  },
+
   // --- 核心数据加载功能 ---
   loadRoomData: function(roomId) {
+    this.setData({
+      isLoading: true,
+      errorMessage: ''
+    });
+
     fetchRoomDetailsAndSeats(roomId)
       .then(fetchedData => {
-        // 4. 数据获取成功
-        let localSeats = fetchedData.seats; // 获取的初始座位（可用/已预约）
-        let currentUserReservation = wx.getStorageSync('userReservation');
+        // 数据获取成功
+        console.log("加载的自习室数据:", fetchedData);
+        // 确保seats是一个数组
+        let localSeats = fetchedData.seats || [];
+        
+        // 直接从座位数据中查找用户已预约的座位
         let userSeatIndex = null;
-        let userReservationDate = null;
+        let userSeatId = null;
         let userReservationStartTime = null;
         let userReservationEndTime = null;
-        let hasReservationInThisRoom = false; // 存储的预约是否为此自习室？
+        let userReservationDate = null;
+        let hasReservation = false;
 
-        // 5. 检查存储的预约是否属于此自习室
-        if (currentUserReservation && currentUserReservation.roomId == roomId && currentUserReservation.seatIndex !== undefined) {
-          console.log(`用户在此自习室(${roomId})有预约，座位索引: ${currentUserReservation.seatIndex}`);
-          userSeatIndex = currentUserReservation.seatIndex;
-          userReservationDate = currentUserReservation.date;
-          userReservationStartTime = currentUserReservation.startTime;
-          userReservationEndTime = currentUserReservation.endTime;
-          hasReservationInThisRoom = true;
-
-          // 在localSeats数组中标记用户的座位
-          if (localSeats[userSeatIndex]) {
-            localSeats[userSeatIndex].status = 'userReserved';
-          } else {
-            console.warn("存储的userSeatIndex超出了获取的座位范围:", userSeatIndex);
-            // 这表示不一致，可能需要清除存储？
-            wx.removeStorageSync('userReservation');
-            hasReservationInThisRoom = false;
-            userSeatIndex = null; // 重置索引
+        // 查找用户预约的座位（status为userReserved）
+        for (let i = 0; i < localSeats.length; i++) {
+          if (localSeats[i].status === 'userReserved') {
+            userSeatIndex = i;
+            userSeatId = localSeats[i].id;
+            hasReservation = true;
+            
+            // 尝试从ordering_list获取预约时间
+            if (localSeats[i].ordering_list && localSeats[i].ordering_list.length > 0) {
+              // 获取当前用户的预约（通常是第一个）
+              const userOrder = localSeats[i].ordering_list[0];
+              if (userOrder.formattedStartTime) {
+                const startParts = userOrder.formattedStartTime.split(' ');
+                if (startParts.length === 2) {
+                  userReservationDate = startParts[0];
+                  userReservationStartTime = startParts[1];
+                }
+              }
+              if (userOrder.formattedEndTime) {
+                const endParts = userOrder.formattedEndTime.split(' ');
+                if (endParts.length === 2) {
+                  userReservationEndTime = endParts[1];
+                }
+              }
+            }
+            break;
           }
-        } else if (currentUserReservation && currentUserReservation.roomId != roomId) {
-            console.log(`用户在另一个自习室有预约: ID=${currentUserReservation.roomId}, 名称=${currentUserReservation.roomName}`);
-            // 全局保持hasReservation为true，但对此自习室为false
         }
 
-        // 获取自习室类型名称
-        const typeName = getRoomTypeName(fetchedData.type);
-
-        // 6. 使用获取和处理的信息更新页面数据
         this.setData({
           roomDetails: { // 存储静态详情
             room_id: fetchedData.room_id,
@@ -240,29 +330,31 @@ Page({
             location: fetchedData.location,
             status: fetchedData.status,
             type: fetchedData.type,
-            typeName: typeName,
-            seat_number: fetchedData.seat_number,
-            capacity: fetchedData.capacity,
+            typeName: fetchedData.typeName,
+            available_seats: fetchedData.availableSeats,
+            total_seats: fetchedData.totalSeats,
             open_time: fetchedData.open_time,
             close_time: fetchedData.close_time,
+            formattedOpenTime: fetchedData.formattedOpenTime,
+            formattedCloseTime: fetchedData.formattedCloseTime,
           },
-          totalSeats: parseInt(fetchedData.capacity),
-          availableSeats: fetchedData.availableSeats, // 使用计算的可用数量
+          totalSeats: fetchedData.totalSeats,
+          availableSeats: fetchedData.availableSeats,
           seats: localSeats, // 设置最终的座位数组
           isLoading: false,
           errorMessage: '',
           // 设置特定于此自习室的用户预约详情
-          hasReservation: !!currentUserReservation, // 全局检查：用户是否有任何预约？
-          userSeatIndex: hasReservationInThisRoom ? userSeatIndex : null,
-          userReservationDate: hasReservationInThisRoom ? userReservationDate : null,
-          userReservationStartTime: hasReservationInThisRoom ? userReservationStartTime : null,
-          userReservationEndTime: hasReservationInThisRoom ? userReservationEndTime : null,
+          hasReservation: hasReservation,
+          userSeatIndex: userSeatIndex,
+          userSeatId: userSeatId,
+          userReservationDate: userReservationDate,
+          userReservationStartTime: userReservationStartTime,
+          userReservationEndTime: userReservationEndTime,
         });
         console.log("加载和检查后设置的最终数据:", this.data);
-
       })
       .catch(error => {
-        // 7. 处理获取错误
+        // 处理获取错误
         console.error('加载自习室数据失败:', error);
         this.setData({
           isLoading: false,
@@ -278,60 +370,103 @@ Page({
 
     const seatIndex = e.currentTarget.dataset.index;
     const seat = this.data.seats[seatIndex];
-    const currentUserReservation = wx.getStorageSync('userReservation'); // 再次检查全局预约状态
-
+    
     if (!seat) {
       console.error("点击了无效的座位索引:", seatIndex);
       return;
     }
 
-    if (seat.status === 'available') {
-      // --- 情况1: 座位可用 ---
-      if (currentUserReservation) {
-        // 如果用户已经在任何地方有预约，阻止再次预约
-        let roomTypeName = '';
-        if (currentUserReservation.roomType !== undefined) {
-          roomTypeName = getRoomTypeName(currentUserReservation.roomType);
-        }
-        
-        wx.showToast({
-          title: `您已在 ${currentUserReservation.roomName} (${roomTypeName}) 预约了座位 ${currentUserReservation.seatIndex + 1} (${currentUserReservation.date} ${currentUserReservation.startTime}-${currentUserReservation.endTime})`,
-          icon: 'none',
-          duration: 3500, // 更长时间
-        });
-      } else {
-        // 没有当前预约，打开预约详情模态框
-        this.setData({
-          showReservationModal: true,
-          selectedSeatIndex: seatIndex,
-          // 打开模态框时重置时间选择为默认值
-          selectedDate: currentDate,
-          startTime: '09:00',
-          endTime: '10:00',
-        });
-      }
-    } else if (seat.status === 'userReserved') {
-      // --- 情况2: 点击了此自习室中自己预约的座位 ---
-       if (this.data.userSeatIndex === seatIndex) { // 再次检查它是否是正确的用户座位
-            this.setData({
-                showCancelModal: true,
-                cancelModalMessage: `取消预约座位 ${seatIndex + 1} (${this.data.userReservationDate} ${this.data.userReservationStartTime}-${this.data.userReservationEndTime}) 吗?`,
-                seatIndexToCancel: seatIndex
-            });
-       } else {
-            // 如果逻辑正确，应该不会发生，但安全检查
-            console.warn("点击了userReserved座位，但索引与存储的userSeatIndex不匹配。");
-             wx.showToast({ title: `您已预约此座位`, icon: 'none' });
-       }
-
-    } else if (seat.status === 'reserved') {
-        // --- 情况3: 点击了他人预约的座位 ---
-         wx.showToast({
-          title: `座位 ${seatIndex + 1} 已被他人预约`,
-          icon: 'none',
-          duration: 2000,
-        });
+    // 无论座位状态如何，显示座位详情
+    this.showSeatDetails(seatIndex, seat);
+  },
+  
+  // 显示座位详情
+  showSeatDetails: function(seatIndex, seat) {
+    // 准备座位详情信息
+    const seatDetail = {
+      index: seatIndex,
+      id: seat.id,
+      name: seat.name,
+      status: seat.status,
+      statusText: this.getSeatStatusText(seat.status),
+      hasSocket: seat.has_socket === 1 ? '有' : '无',
+      orderingList: seat.ordering_list || []
+    };
+    
+    this.setData({
+      seatDetailInfo: seatDetail,
+      showSeatDetailModal: true
+    });
+  },
+  
+  // 获取座位状态文本
+  getSeatStatusText: function(status) {
+    switch(status) {
+      case 'available': return '可用';
+      case 'unavailable': return '不可用';
+      case 'reserved': return '已被预约';
+      case 'userReserved': return '您已预约此座位';
+      case 'temporarilyAway': return '暂时离开';
+      default: return '未知状态';
     }
+  },
+  
+  // 关闭座位详情模态框
+  closeSeatDetailModal: function() {
+    this.setData({
+      showSeatDetailModal: false,
+      seatDetailInfo: null
+    });
+  },
+  
+  // 从座位详情转到预约
+  goToReserveFromDetail: function() {
+    const { seatDetailInfo, hasReservation } = this.data;
+    
+    if (!seatDetailInfo || seatDetailInfo.status !== 'available') {
+      wx.showToast({
+        title: '此座位无法预约',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 检查用户是否已有预约
+    if (hasReservation) {
+      wx.showToast({
+        title: '您已有预约，无法再次预约',
+        icon: 'none',
+        duration: 2500
+      });
+      return;
+    }
+    
+    // 关闭详情模态框，打开预约模态框
+    this.setData({
+      showSeatDetailModal: false,
+      showReservationModal: true,
+      selectedSeatIndex: seatDetailInfo.index,
+      // 打开模态框时重置时间选择为默认值
+      selectedDate: currentDate,
+      startTime: currentTime,
+      endTime: currentTime,
+    });
+  },
+  
+  // 从座位详情显示取消预约确认
+  showCancelReservationFromDetail: function() {
+    const { seatDetailInfo, userReservationDate, userReservationStartTime, userReservationEndTime } = this.data;
+    if (!seatDetailInfo || seatDetailInfo.status !== 'userReserved') {
+      return;
+    }
+    
+    // 关闭座位详情模态框，打开取消确认模态框
+    this.setData({
+      showSeatDetailModal: false,
+      showCancelModal: true,
+      cancelModalMessage: `取消预约座位 ${seatDetailInfo.index + 1} (${userReservationDate} ${userReservationStartTime}-${userReservationEndTime}) 吗?`,
+      seatIndexToCancel: seatDetailInfo.index
+    });
   },
 
   // --- 预约选择模态框处理程序 ---
@@ -353,17 +488,25 @@ Page({
     });
   },
 
-  // 不确认关闭预约选择模态框
+  // 不确认关闭预约选择模态框 - 返回座位详情
   cancelReservationSelection: function() {
+    const seatIndex = this.data.selectedSeatIndex;
+    
+    // 关闭预约模态框
     this.setData({
-      showReservationModal: false,
-      selectedSeatIndex: null, // 清除选定的座位索引
+      showReservationModal: false
     });
+    
+    // 如果有有效的座位索引，重新打开座位详情
+    if (seatIndex !== null && this.data.seats[seatIndex]) {
+      const seat = this.data.seats[seatIndex];
+      this.showSeatDetails(seatIndex, seat);
+    }
   },
 
   // 从选择模态框确认预约
   confirmReservation: function() {
-    const { roomId, roomDetails, selectedSeatIndex, selectedDate, startTime, endTime, seats } = this.data;
+    const { selectedSeatIndex, selectedDate, startTime, endTime, seats } = this.data;
 
     // 基本验证
     if (selectedSeatIndex === null || !selectedDate || !startTime || !endTime) {
@@ -375,68 +518,95 @@ Page({
         return;
     }
 
-    // --- 假设验证通过 ---
-    const newSeats = [...seats];
-    if (!newSeats[selectedSeatIndex] || newSeats[selectedSeatIndex].status !== 'available') {
+    const selectedSeat = seats[selectedSeatIndex];
+    if (!selectedSeat || selectedSeat.status !== 'available') {
          wx.showToast({ title: '该座位已被预约或无效', icon: 'none' });
-         this.setData({ showReservationModal: false, selectedSeatIndex: null });
+         this.setData({ 
+           showReservationModal: false,
+           showSeatDetailModal: false,
+           selectedSeatIndex: null 
+         });
          return;
     }
 
-    newSeats[selectedSeatIndex].status = 'userReserved';
+    // 转换为毫秒时间戳
+    const startTimestamp = dateTimeToTimestamp(selectedDate, startTime);
+    const endTimestamp = dateTimeToTimestamp(selectedDate, endTime);
 
-    // --- 准备当前预约和历史的详情 ---
-    const reservationDetails = {
-        roomId: roomId,
-        roomName: roomDetails.name,
-        roomType: roomDetails.type,
-        seatIndex: selectedSeatIndex,
-        date: selectedDate,
-        startTime: startTime,
-        endTime: endTime,
-        bookingTimestamp: new Date().toISOString(), // 添加预约时间戳
-        isSignedIn: false, // 新预约的默认状态
-        isTemporarilyAway: false, // 默认状态
-    };
-
-    // --- 1. 存储当前预约详情 ---
-    wx.setStorageSync('userReservation', reservationDetails);
-
-    // --- 2. 添加到预约历史 ---
-    try {
-        let history = wx.getStorageSync('reservationHistory') || [];
-        if (!Array.isArray(history)) {
-            console.warn("存储中的预约历史不是数组。重置。");
-            history = [];
-        }
-        history.push(reservationDetails);
-        wx.setStorageSync('reservationHistory', history);
-        console.log('预约已添加到历史:', reservationDetails);
-        console.log('更新后的历史长度:', history.length);
-
-    } catch (e) {
-        console.error("更新预约历史失败:", e);
-    }
-    // --- 历史更新结束 ---
-
-    // 更新页面数据
-    this.setData({
-      seats: newSeats,
-      hasReservation: true, // 现在用户全局有预约
-      userSeatIndex: selectedSeatIndex, // 预约在此自习室
-      userReservationDate: selectedDate,
-      userReservationStartTime: startTime,
-      userReservationEndTime: endTime,
-      showReservationModal: false, // 关闭选择模态框
-      selectedSeatIndex: null,    // 清除临时选择索引
-      // 根据计算更新可用座位数
-      availableSeats: newSeats.filter(s => s.status === 'available').length,
+    // 显示加载提示
+    wx.showLoading({
+      title: '预约中...',
+      mask: true
     });
 
-    wx.showToast({
-        title: `座位 ${selectedSeatIndex + 1} 预约成功`,
-        icon: 'success',
-        duration: 2000
+    // 调用预约API
+    requestWithToken({
+      url: '/api/v1.0/student/seats/book',
+      method: 'POST',
+      data: {
+        seat_id: selectedSeat.id,
+        start_time: startTimestamp,
+        end_time: endTimestamp
+      },
+      success: (res) => {
+        wx.hideLoading();
+        
+        if (res.statusCode === 200) {
+          // 预约成功，刷新自习室数据
+          wx.showToast({
+            title: `座位 ${selectedSeatIndex + 1} 预约成功`,
+            icon: 'success',
+            duration: 2000
+          });
+          
+          // 关闭所有模态框并刷新数据
+          this.setData({
+            showReservationModal: false,
+            showSeatDetailModal: false,
+            selectedSeatIndex: null,
+            seatDetailInfo: null
+          });
+          
+          // 重新加载自习室数据以获取最新的预约状态
+          this.loadRoomData(this.data.roomId);
+          
+        } else if (res.statusCode === 403) {
+          // 预约失败，显示错误信息
+          console.error('预约API调用失败:', res.data);
+          let errorMessage = '预约失败';
+          if (res.data && res.data.message) {
+            errorMessage = res.data.message;
+          }
+          wx.showToast({
+            title: errorMessage,
+            icon: 'none',
+            duration: 2500
+          });
+        }else if(res.statusCode === 401){
+          wx.showToast({
+            title: `该自习室为专用自习室，您无法预约`,
+            icon: 'none',
+            duration: 2000
+          });
+        } else {
+          // 其他错误
+          console.error('预约API调用返回未知状态:', res.statusCode, res.data);
+          wx.showToast({
+            title: `预约失败 (${res.statusCode})`,
+            icon: 'none',
+            duration: 2000
+          });
+        }
+      },
+      fail: (error) => {
+        wx.hideLoading();
+        console.error('预约API请求失败:', error);
+        wx.showToast({
+          title: '网络错误，请重试',
+          icon: 'none',
+          duration: 2000
+        });
+      }
     });
   },
 
@@ -444,58 +614,102 @@ Page({
 
   // 关闭取消确认模态框
   closeCancelModal: function() {
-      this.setData({
-          showCancelModal: false,
-          cancelModalMessage: '',
-          seatIndexToCancel: null,
-      });
+    this.setData({
+      showCancelModal: false,
+      cancelModalMessage: '',
+      seatIndexToCancel: null,
+    });
   },
 
-  // 确认取消
+  // 确认取消预约
   confirmCancellation: function() {
-      const { seatIndexToCancel, seats } = this.data;
-       if (seatIndexToCancel === null) return; // 不应该发生
+    const { seatIndexToCancel, seats, userSeatId } = this.data;
+    if (seatIndexToCancel === null || !userSeatId) return;
 
-      const newSeats = [...seats];
+    const seat = seats[seatIndexToCancel];
+    if (!seat || seat.status !== 'userReserved') {
+      wx.showToast({ 
+        title: '无法取消：座位状态已改变', 
+        icon: 'none' 
+      });
+      this.closeCancelModal();
+      return;
+    }
 
-      // 只允许取消用户预约的座位
-      if (newSeats[seatIndexToCancel] && newSeats[seatIndexToCancel].status === 'userReserved') {
-        newSeats[seatIndexToCancel].status = 'available';
+    // 显示加载提示
+    wx.showLoading({
+      title: '取消预约中...',
+      mask: true
+    });
 
-        // 从本地存储中移除当前预约
-        wx.removeStorageSync('userReservation');
-        console.log("用户预约已从存储中删除。");
-
-        // 更新页面数据
-        this.setData({
-            seats: newSeats,
-            hasReservation: false, // 用户不再有活动预约
-            userSeatIndex: null,
-            userReservationDate: null,
-            userReservationStartTime: null,
-            userReservationEndTime: null,
-            showCancelModal: false, // 关闭取消模态框
-            cancelModalMessage: '',
-            seatIndexToCancel: null,
-            // 更新可用座位数
-            availableSeats: newSeats.filter(s => s.status === 'available').length,
-        });
-
-         wx.showToast({
+    // 调用取消预约API
+    requestWithToken({
+      url: `/api/v1.0/student/seats/${userSeatId}/release`,
+      method: 'POST',
+      success: (res) => {
+        wx.hideLoading();
+        
+        if (res.statusCode === 200) {
+          // 取消成功
+          wx.showToast({
             title: '预约已取消',
             icon: 'success',
             duration: 2000
+          });
+          
+          // 关闭所有模态框并刷新数据
+          this.setData({
+            showCancelModal: false,
+            showSeatDetailModal: false,
+            cancelModalMessage: '',
+            seatIndexToCancel: null,
+            seatDetailInfo: null
+          });
+          
+          // 重新加载自习室数据以获取最新的座位状态
+          this.loadRoomData(this.data.roomId);
+          
+        } else {
+          // 取消失败
+          console.error('取消预约API调用失败:', res.statusCode, res.data);
+          let errorMessage = '取消预约失败';
+          if (res.data && res.data.message) {
+            errorMessage = res.data.message;
+          }
+          wx.showToast({
+            title: errorMessage,
+            icon: 'none',
+            duration: 2500
+          });
+        }
+      },
+      fail: (error) => {
+        wx.hideLoading();
+        console.error('取消预约API请求失败:', error);
+        wx.showToast({
+          title: '网络错误，请重试',
+          icon: 'none',
+          duration: 2000
         });
-
-      } else {
-          console.error("尝试取消一个不是'userReserved'或不存在的座位。");
-          wx.showToast({ title: '取消失败，状态异常', icon: 'none'});
-          this.closeCancelModal(); // 无论如何关闭模态框
       }
+    });
   },
 
-  // 取消取消操作（只关闭模态框）
+  // 取消取消操作（关闭模态框并返回座位详情）
   cancelCancellationAction: function() {
-    this.closeCancelModal();
+    const seatIndex = this.data.seatIndexToCancel;
+    
+    // 关闭取消模态框
+    this.setData({
+      showCancelModal: false,
+      cancelModalMessage: '',
+      seatIndexToCancel: null
+    });
+    
+    // 如果有有效座位索引，重新打开座位详情
+    if (seatIndex !== null && this.data.seats[seatIndex]) {
+      const seat = this.data.seats[seatIndex];
+      this.showSeatDetails(seatIndex, seat);
+    }
   },
 });

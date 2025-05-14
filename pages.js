@@ -11,4 +11,5 @@ export default {
   leave: "/subpackages/pages/leave/index",
   Announce: "/subpackages/pages/announce/index",
   NameList: "/subpackages/pages/nameList/index"
+  
 }

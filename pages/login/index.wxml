@@ -16,16 +16,18 @@
     </radio-group>
   </view>
 
-  <!-- 学工号输入框 -->
   <view class="input-group">
     <text>用户名：</text>
-    <input class="input-field" type="text" placeholder="请输入用户名" bindinput="onInputStudentId" />
+    <input class="input-field" type="text" placeholder="请输入用户名" bindinput="onInputStudentId"  />
   </view>
 
-  <!-- 密码输入框 -->
   <view class="input-group">
     <text>密码：</text>
-    <input class="input-field" type="password" placeholder="请输入密码" bindinput="onInputPassword" />
+    <input type="text" password="{{showPassword}}" class="input-field"  placeholder="请输入密码" bindinput="onInputPassword" />
+    <image
+    src="{{showPassword ? '../../static/ali-icon/eye-closed.png' : '../../static/ali-icon/eye-open.png'}}"
+    class="eye-icon"
+    bindtap="togglePasswordVisibility" />
   </view>
 
   <!-- 登录按钮 -->

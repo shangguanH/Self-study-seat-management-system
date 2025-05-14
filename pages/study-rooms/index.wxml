@@ -43,8 +43,13 @@
         </view>
         <view class="form-item">
           <text class="label">容量</text>
-          <input type="number" placeholder="请输入容量" value="{{currentRoom.capacity}}" 
+          <input type="number" placeholder="请输入最大容量" value="{{currentRoom.capacity}}" 
                  bindinput="onInputChange" data-field="currentRoom.capacity" />
+        </view>
+        <view class="form-item" wx:if="{{isEditMode}}">
+          <text class="label">现座位数量</text>
+          <input type="number" value="{{currentRoom.seat_number}}" 
+                 data-field="currentRoom.seat_number" disabled="true" />
         </view>
         <view class="form-item">
           <text class="label">开放时间</text>
@@ -62,7 +67,7 @@
         </view>
         <view class="form-item">
           <text class="label">开放</text>
-          <switch checked="{{seatForm.status}}" bindchange="onSwitchChange" data-field="status" />
+          <switch checked="{{currentRoom.status}}" bindchange="onSwitchChange" data-field="status" />
         </view>
       </scroll-view>
       <view class="modal-footer">

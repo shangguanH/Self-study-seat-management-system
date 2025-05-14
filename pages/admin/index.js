@@ -10,7 +10,7 @@ Page({
   onUserManagement: function () {
     // 跳转到用户管理页面
     wx.navigateTo({
-      url: '/pages/admin/user-management',
+      url: '/pages/student-management/index',
     });
   },
 

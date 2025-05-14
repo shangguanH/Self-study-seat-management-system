@@ -1,9 +1,9 @@
 const { TEST_URL } = require('../../utils/config');
 Page({
   data: {
-    identity: 'student',  // 默认选择学生
     username: '',         // 用户名
-    password: ''          // 密码
+    password: '',          // 密码
+    showPassword: true
   },
 
   // 处理用户名输入
@@ -19,6 +19,13 @@ Page({
       password: e.detail.value // 更新 password 字段
     });
   },
+  
+  togglePasswordVisibility: function() {
+    this.setData({
+      showPassword: !this.data.showPassword
+    });
+    console.log(this.data.showPassword);
+  },
 
   onIdentityChange: function (e) {
     this.setData({
@@ -33,18 +40,16 @@ onLogin: function () {
 
   if (!username || !password) {
     wx.showToast({
-      title: '请填写学工号和密码',
+      title: '请填写用户名和密码',
       icon: 'none'
     });
     return;
   }
-  wx.navigateTo({
-    url: '/pages/index/index',
-  });
+
   // Show loading indicator
-  // wx.showLoading({
-  //   title: '登录中...',
-  // });
+  wx.showLoading({
+    title: '登录中...',
+  });
 
   // Determine the appropriate API endpoint based on identity
   const apiUrl = TEST_URL +  (identity == 'student' 

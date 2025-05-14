@@ -2,7 +2,6 @@ const { TEST_URL } = require('../../utils/config');
 
 Page({
   data: {
-    identity: 'student', // 默认选择学生身份
     username: '',
     password: '',
     email: '',
@@ -11,7 +10,6 @@ Page({
     student_id: '',
     // 表单选项数据
     roomTypes: [
-      { id: 0, name: '通用' },
       { id: 1, name: '计算机学院' },
       { id: 2, name: '物理学院' }
     ],
@@ -46,10 +44,10 @@ Page({
 
   // 注册提交
   onRegister() {
-    const { identity, username, password, email, phone, student_id, type } = this.data;
+    const { username, password, email, phone, student_id, type } = this.data;
 
     // 基础校验
-    if (!username || !password || !email || !phone || (identity === 'student' && !student_id)) {
+    if (!username || !password || !email || !phone ||!student_id) {
       wx.showToast({
         title: '请填写完整信息',
         icon: 'none'
@@ -58,21 +56,17 @@ Page({
     }
 
     // 构造注册地址
-    const regUrl = TEST_URL + (identity === 'student' ? '/api/v1.0/student/register' : '/api/v1.0/admin/register');
+    const regUrl = TEST_URL + '/api/v1.0/student/register';
 
     // 构造请求数据
     const registerData = {
       username,
       password,
       email,
-      phone
+      phone,
+      student_id,
+      type
     };
-
-    // 若是学生，附加 student_id 和 type
-    if (identity === 'student') {
-      registerData.student_id = student_id;
-      registerData.type = type;
-    }
 
     // 发起请求
     wx.request({
@@ -94,15 +88,9 @@ Page({
         });
 
         setTimeout(() => {
-          if (identity === 'student') {
-            wx.navigateTo({
-              url: `/pages/index/index?studentId=${username}`
-            });
-          } else {
-            wx.navigateTo({
-              url: '/pages/admin/index'
-            });
-          }
+          wx.navigateTo({
+            url: `/pages/index/index?studentId=${username}`
+          });
         }, 1500);
       },
       fail: (err) => {

@@ -45,8 +45,8 @@ Page({
       location: '',
       type: 0,        // 默认通用类型
       status: 1,      // 默认开放
-      seat_number: '',
-      capacity: '',
+      seat_number: 0,
+      capacity: 0,
       open_time: '08:00',  // 默认开放时间
       close_time: '22:00'  // 默认关闭时间
     },
@@ -76,7 +76,6 @@ Page({
       method: 'GET',
       success: (res) => {
         if (res.statusCode === 200) {
-          console.log(res.data.rooms);
           this.setData({
             studyRooms: res.data.rooms || [],
             loading: false
@@ -136,7 +135,7 @@ onCloseDetails: function() {
         location: '',
         type: 0,
         status: 1,
-        capacity: '',
+        capacity: 0,
         open_time: '08:00',
         close_time: '22:00'
       }
@@ -180,7 +179,7 @@ onCloseDetails: function() {
 
   onSaveStudyRoom: function() {
     const { currentRoom } = this.data;
-    
+    const {seat_number ,...rest} = currentRoomp;
     if (!currentRoom.room_name || !currentRoom.location || !currentRoom.capacity) {
       wx.showToast({
         title: '请填写所有字段',
@@ -188,29 +187,36 @@ onCloseDetails: function() {
       });
       return;
     }
-
+    const openTimestamp = timeStrToTimestamp(currentRoom.open_time);
+    const closeTimestamp = timeStrToTimestamp(currentRoom.close_time);
+    if (openTimestamp >= closeTimestamp) {
+      wx.showToast({
+        title: '开始时间不能晚于或等于结束时间',
+        icon: 'none'
+      });
+      return;
+    }
     // 转换为数字类型
     const payload = {
-      ...currentRoom,
+      ...rest,
       capacity: parseInt(currentRoom.capacity),
       type: parseInt( currentRoom.type),
       status: currentRoom.status ? 1 : 0,
-      open_time: timeStrToTimestamp(currentRoom.open_time),
-      close_time: timeStrToTimestamp(currentRoom.close_time)
+      open_time: openTimestamp,
+      close_time: closeTimestamp
     };
-    console.log(payload);
     requestWithToken({
       url: '/api/v1.0/admin/rooms',
       method: 'POST',
       data: payload,
       success: (res) => {
+        console.log(res);
         if (res.statusCode === 201) {
           wx.showToast({ title: '添加成功' });
           this.loadStudyRooms();
           this.setData({ showModal: false });
         } else {
           this.handleError('添加失败');
-          console.log(res);
         }
       },
       fail: () => this.handleError('网络错误')
@@ -225,16 +231,31 @@ onCloseDetails: function() {
 
   onUpdateRoom: function() {
     const { currentRoom } = this.data;
+    if (this.data.isEditMode && currentRoom.seat_number > currentRoom.capacity) {
+      wx.showToast({
+        title: '最大容量不得修改小于当前座位数量',
+        icon: 'none'
+      });
+      return;
+    }
+    const openTimestamp = timeStrToTimestamp(currentRoom.open_time);
+    const closeTimestamp = timeStrToTimestamp(currentRoom.close_time);
+    if (openTimestamp >= closeTimestamp) {
+      wx.showToast({
+        title: '开始时间不能晚于或等于结束时间',
+        icon: 'none'
+      });
+      return;
+    }
     const payload = {
       room_name:currentRoom.room_name,
       location:currentRoom.location,
       capacity: parseInt(currentRoom.capacity),
       type: parseInt(currentRoom.type),
       status: currentRoom.status ? 1 : 0,
-      open_time: timeStrToTimestamp(currentRoom.open_time),
-      close_time: timeStrToTimestamp(currentRoom.close_time)
+      open_time: openTimestamp,
+      close_time: closeTimestamp
     };
-    console.log(payload);
     requestWithToken({
       url:`/api/v1.0/admin/rooms/${currentRoom.room_id}`,
       method: 'PATCH',

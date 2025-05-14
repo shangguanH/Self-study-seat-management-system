@@ -10,7 +10,8 @@
     "pages/my/index",
     "pages/admin/index",
     "pages/study-rooms/index",
-    "pages/seats-management/index"
+    "pages/seats-management/index",
+    "pages/student-management/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

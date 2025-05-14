@@ -14,16 +14,30 @@
   margin-bottom: 20px;
 }
 
-.input-group {
+/* .input-group {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin: 20rpx;
+} */
+.input-group {
+  position: relative; /* 已设置，确认无覆盖 */
+  margin: 20rpx;
+  display: flex;
+  align-items: center;
 }
 
 .input-field {
-  width: 100%;
+  /* width: 100%;
   padding: 10px;
   font-size: 16px;
   border-radius: 5px;
+  border: 1px solid #ccc; */
+  flex: 1;
+  padding: 10rpx;
   border: 1px solid #ccc;
+  border-radius: 8rpx;
 }
 
 .login-btn {
@@ -58,4 +72,19 @@ button {
 
 .register-btn button:hover {
   background-color: #45a049; /* 鼠标悬停时的背景颜色 */
+}
+/* 
+.eye-icon {
+  width: 40rpx;
+  height: 40rpx;
+  position: absolute;
+  right: 20rpx;
+} */
+/* 调整图标定位和大小 */
+.eye-icon {
+  width: 40rpx;
+  height: 40rpx;
+  position: absolute;
+  right: 20rpx;
+  z-index: 2; /* 确保图标在输入框上方 */
 }

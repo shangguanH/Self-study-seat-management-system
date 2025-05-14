@@ -1,0 +1,23 @@
+<view class="container">
+  <view wx:if="{{students.length === 0}}" class="empty">暂无学生数据</view>
+
+  <block wx:for="{{students}}" wx:key="student_id">
+    <view class="student-item" bindtap="onViewStudent" data-student="{{item}}">
+      <text class="name">{{item.username}}</text>
+      <text class="id">{{item.student_id}}</text>
+    </view>
+  </block>
+
+  <!-- 详情弹窗 -->
+  <view wx:if="{{showModal}}" class="modal">
+    <view class="modal-content">
+      <view class="modal-title">学生详情</view>
+      <view class="modal-line">姓名：{{selectedStudent.username}}</view>
+      <view class="modal-line">学号：{{selectedStudent.student_id}}</view>
+      <view class="modal-line">院系：{{selectedStudent.typeName}}</view>
+      <view class="modal-line">手机：{{selectedStudent.phone}}</view>
+      <view class="modal-line">邮箱：{{selectedStudent.email}}</view>
+      <button bindtap="onCloseModal" class="modal-close-btn">关闭</button>
+    </view>
+  </view>
+</view>

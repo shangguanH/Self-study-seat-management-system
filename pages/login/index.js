@@ -2,11 +2,11 @@ const { TEST_URL } = require('../../utils/config');
 Page({
   data: {
     identity: 'student',  // 默认选择学生
-    username: '',         // 学工号
+    username: '',         // 用户名
     password: ''          // 密码
   },
 
-  // 处理学工号输入
+  // 处理用户名输入
   onInputStudentId: function (e) {
     this.setData({
       username: e.detail.value // 更新 username 字段

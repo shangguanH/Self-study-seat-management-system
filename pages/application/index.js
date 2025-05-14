@@ -1,3 +1,4 @@
+const { requestWithToken } = require('../../utils/request');
 Page({
   data: {
     minSeatCount: '', // 最小座位数筛选值
@@ -19,53 +20,62 @@ Page({
 
   // 获取自习室数据
   fetchRooms: function() {
-    // 这里应该是从API获取数据，暂时使用模拟数据
-    const rooms = [
-      { 
-        room_id: 1, 
-        name: '自习室A', 
-        location: '图书馆一楼', 
-        status: 1, 
-        type: 0, // 通用
-        seat_number: '50', 
-        capacity: '50',
-        open_time: 8, 
-        close_time: 22
-      },
-      { 
-        room_id: 2, 
-        name: '自习室B', 
-        location: '图书馆二楼', 
-        status: 1, 
-        type: 1, // 计算机学院
-        seat_number: '40', 
-        capacity: '40',
-        open_time: 8, 
-        close_time: 22
-      },
-      { 
-        room_id: 3, 
-        name: '自习室C', 
-        location: '教学楼三楼', 
-        status: 1, 
-        type: 2, // 物理学院
-        seat_number: '30', 
-        capacity: '30',
-        open_time: 9, 
-        close_time: 21
-      },
-      // 可以添加更多自习室数据...
-    ];
+    this.setData({ loading: true });
     
-    // 计算可用座位数
-    rooms.forEach(room => {
-      room.availableSeats = parseInt(room.seat_number);
-      room.totalSeats = parseInt(room.capacity);
+    requestWithToken({
+      url: '/api/v1.0/student/rooms',
+      method: 'GET',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          console.log(res.data.rooms);
+          const rooms = res.data.rooms || [];
+          
+          // 计算可用座位数并格式化时间
+          rooms.forEach(room => {
+            room.availableSeats = parseInt(room.seat_number);
+            room.totalSeats = parseInt(room.capacity);
+            
+            // 将时间戳转换为可读时间格式
+            if (room.open_time) {
+              room.formattedOpenTime = this.formatTime(room.open_time);
+            }
+            if (room.close_time) {
+              room.formattedCloseTime = this.formatTime(room.close_time);
+            }
+          });
+          
+          this.setData({
+            rooms: rooms,
+            filteredRooms: rooms,
+            loading: false
+          });
+        } else {
+          console.log(res.statusCode);
+          this.handleError('加载失败');
+        }
+      },
+      fail: () => this.handleError('网络错误')
     });
+  },
+
+  // 格式化时间戳为可读时间
+  formatTime: function(timestamp) {
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const minute = date.getMinutes().toString().padStart(2, '0');
     
-    this.setData({
-      rooms: rooms,
-      filteredRooms: rooms
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  },
+
+  handleError: function(message) {
+    this.setData({ loading: false });
+    wx.showToast({
+      title: message,
+      icon: 'none',
+      duration: 2000
     });
   },
 
@@ -91,8 +101,9 @@ Page({
     }
 
     // 根据自习室类型进行筛选
-    if (this.data.selectedType !== -1) {
-      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType);
+    if (this.data.selectedType !== 0) {
+      console.log(this.data.selectedType);
+      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType - 1);
     }
 
     // 更新筛选后的自习室列表
@@ -105,7 +116,7 @@ Page({
   onRoomClick: function(e) {
     const roomIndex = e.currentTarget.dataset.index;
     const selectedRoom = this.data.filteredRooms[roomIndex];
-    const url = `/pages/reserve/index?roomId=${selectedRoom.room_id}&roomName=${selectedRoom.name}`;
+    const url = `/pages/reserve/index?roomId=${selectedRoom.room_id}`;
     console.log("跳转的 URL: ", url);  // 输出跳转的 URL，调试时查看
     wx.navigateTo({
       url: url,

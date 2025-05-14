@@ -34,7 +34,7 @@
         
         <view class="detail-item">
           <text class="detail-label">开放时间：</text>
-          <text class="detail-value">{{roomDetails.open_time}}:00 - {{roomDetails.close_time}}:00</text>
+          <text class="detail-value">{{roomDetails.formattedOpenTime}} - {{roomDetails.formattedCloseTime}}</text>
         </view>
         
         <view class="detail-item">
@@ -68,9 +68,13 @@
           <view class="legend-color reserved"></view>
           <text>已预约</text>
         </view>
-        <view class="legend-item">
+        <!-- <view class="legend-item">
           <view class="legend-color user-reserved"></view>
           <text>您的预约</text>
+        </view> -->
+        <view class="legend-item">
+          <view class="legend-color socket"></view>
+          <text>有电源</text>
         </view>
       </view>
       
@@ -78,12 +82,61 @@
         <view 
           wx:for="{{seats}}" 
           wx:key="id"
-          class="seat {{item.status}}" 
+          class="seat {{item.status}} {{item.has_socket == 1 ? 'with-socket' : ''}}" 
           bindtap="onSeatClick" 
           data-index="{{index}}">
-          {{index + 1}}
+          <text>{{index + 1}}</text>
+          <view wx:if="{{item.has_socket == 1}}" class="socket-icon"></view>
         </view>
       </view>
+    </view>
+  </view>
+  
+  <!-- 座位详情模态框 -->
+  <view class="modal-mask" wx:if="{{showSeatDetailModal}}"></view>
+  <view class="modal-container seat-detail-modal" wx:if="{{showSeatDetailModal}}">
+    <view class="modal-header">
+      <text class="modal-title">座位详情 - {{seatDetailInfo.name || '座位' + (seatDetailInfo.index + 1)}}</text>
+    </view>
+    
+    <view class="modal-body">
+      <view class="detail-row">
+        <text class="detail-label">座位状态:</text>
+        <text class="detail-value status-{{seatDetailInfo.status}}">{{seatDetailInfo.statusText}}</text>
+      </view>
+      
+      <view class="detail-row">
+        <text class="detail-label">电源插座:</text>
+        <text class="detail-value">{{seatDetailInfo.hasSocket}}</text>
+      </view>
+      
+      <view class="reservation-section">
+        <text class="section-subtitle">今日预约情况:</text>
+        <block wx:if="{{seatDetailInfo.orderingList && seatDetailInfo.orderingList.length > 0}}">
+          <view class="reservation-item" wx:for="{{seatDetailInfo.orderingList}}" wx:key="index">
+            <text>预约{{index + 1}}: {{item.formattedStartTime}} - {{item.formattedEndTime}}</text>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="empty-reservation">暂无预约记录</view>
+        </block>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <!-- 只有当座位可用且用户没有预约时才显示预约按钮 -->
+      <button wx:if="{{seatDetailInfo.status === 'available' && !hasReservation}}" 
+              class="btn btn-confirm" 
+              bindtap="goToReserveFromDetail">预约此座位</button>
+      
+      <!-- 用户在此自习室有预约且点击的是自己预约的座位，显示取消预约按钮 -->
+      <button wx:elif="{{seatDetailInfo.status === 'userReserved'}}"
+              class="btn btn-danger" 
+              bindtap="showCancelReservationFromDetail">取消预约</button>
+      
+      <!-- 关闭按钮样式随情况调整 -->
+      <button class="btn {{(seatDetailInfo.status === 'available' && !hasReservation) || seatDetailInfo.status === 'userReserved' ? 'btn-cancel' : 'btn-confirm'}}" 
+              bindtap="closeSeatDetailModal">关闭</button>
     </view>
   </view>
   
@@ -118,7 +171,7 @@
     </view>
     
     <view class="modal-footer">
-      <button class="btn btn-cancel" bindtap="cancelReservationSelection">取消</button>
+      <button class="btn btn-cancel" bindtap="cancelReservationSelection">返回</button>
       <button class="btn btn-confirm" bindtap="confirmReservation">确认预约</button>
     </view>
   </view>

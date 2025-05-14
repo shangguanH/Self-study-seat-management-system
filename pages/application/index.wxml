@@ -14,7 +14,7 @@
       <text class="filter-label">自习室类型：</text>
       <picker bindchange="onTypeChange" value="{{selectedType}}" range="{{typeOptions}}" range-key="name">
         <view class="picker">
-          {{typeOptions[selectedType + 1].name || '请选择自习室类型'}}
+          {{typeOptions[selectedType].name || '请选择自习室类型'}}
         </view>
       </picker>
     </view>
@@ -39,7 +39,7 @@
           
           <view class="info-item">
             <text class="info-label">开放时间：</text>
-            <text class="info-value">{{item.open_time}}:00-{{item.close_time}}:00</text>
+            <text class="info-value">{{item.formattedOpenTime}}至{{item.formattedCloseTime}}</text>
           </view>
           
           <view class="room-tags">

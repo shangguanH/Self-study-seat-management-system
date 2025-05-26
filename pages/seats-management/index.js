@@ -39,7 +39,25 @@ Page({
       method: 'GET',
       success: (res) => {
         if (res.statusCode === 200) {
-          this.setData({ seats: res.data.seats });
+          this.setData({ 
+            seats: res.data.seats,
+            displaySeats: res.data.seats.map(seat => {
+              const statusMap = {
+                0: { text: '可用', class: 'available' },
+                1: { text: '不可用', class: 'unavailable' },
+                2: { text: '占用中', class: 'reserved' },
+                3: { text: '暂离', class: 'temporarilyAway' }
+              };
+              const statusInfo = statusMap[seat.status] || { text: '未知', class: 'unknown' };
+          
+              return {
+                ...seat, // 不破坏原始 seats
+                statusText: statusInfo.text,
+                className: statusInfo.class + (seat.has_socket === 1 ? ' with-socket' : '')
+              };
+            })
+          });
+          
           console.log(res.data.seats);
         } else {
           wx.showToast({ title: '加载座位失败', icon: 'none' });

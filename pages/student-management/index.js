@@ -1,5 +1,5 @@
 const { requestWithToken } = require('../../utils/request');
-
+//可以更直接显示其座位的状态，在详情里展示其预约的学生列表
 Page({
   data: {
     students: [],
@@ -45,7 +45,16 @@ Page({
       selectedStudent: null
     });
   },
-
+  mapStatus: function (status) {
+    const map = {
+      0: '可用',
+      1: '不可用',
+      2: '已预约',
+      3: '本人预约',
+      4: '暂离'
+    };
+    return map[status] || '未知';
+  },
   mapType: function (typeId) {
     const map = {
       0: '计算机学院',

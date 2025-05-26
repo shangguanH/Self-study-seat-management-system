@@ -1,6 +1,6 @@
 const { TEST_URL } = require('../../utils/config');
 const { requestWithToken } = require('../../utils/request');
-
+//显示座位有多少是可用的
 //时间戳和字符串之间的转换
 function timeStrToTimestamp(timeStr) {
   const [hours, minutes] = timeStr.split(':').map(Number);
@@ -47,7 +47,7 @@ Page({
       status: 1,      // 默认开放
       seat_number: 0,
       capacity: 0,
-      open_time: '08:00',  // 默认开放时间
+      open_time: '07:00',  // 默认开放时间
       close_time: '22:00'  // 默认关闭时间
     },
   },
@@ -136,7 +136,7 @@ onCloseDetails: function() {
         type: 0,
         status: 1,
         capacity: 0,
-        open_time: '08:00',
+        open_time: '07:00',
         close_time: '22:00'
       }
     });
@@ -179,7 +179,7 @@ onCloseDetails: function() {
 
   onSaveStudyRoom: function() {
     const { currentRoom } = this.data;
-    const {seat_number ,...rest} = currentRoomp;
+    const {seat_number ,...rest} = currentRoom;
     if (!currentRoom.room_name || !currentRoom.location || !currentRoom.capacity) {
       wx.showToast({
         title: '请填写所有字段',

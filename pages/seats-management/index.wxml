@@ -13,11 +13,15 @@
   <scroll-view scroll-y class="scroll-area">
   <view class="seat-list-wrapper">
     <view wx:if="{{seats.length == 0}}" class="empty-tip">暂无座位数据</view>
-      <block wx:if="{{seats.length > 0 }}" wx:for="{{seats}}" wx:key="seat_id">
-        <view class="seat-item" bindtap="onEditSeat" data-id="{{item.seat_id}}">
-          <text>座位 - {{item.seat_name}}</text>
+    <view class="seats-grid">
+      <view wx:if="{{seats.length > 0}}" wx:for="{{displaySeats}}" wx:key="seat_id" >
+        <view class="seat {{item.className}}" bindtap="onEditSeat" data-id="{{item.seat_id}}" data-index="{{index}}">
+          <text>{{index + 1}}</text>
+          <view class="socket-icon" wx:if="{{item.has_socket}}">🔌</view>
         </view>
-      </block>
+      </view>
+    </view>
+      
   </view>
   </scroll-view>
   <!-- 统一的座位弹窗 -->

@@ -3,6 +3,7 @@ Page({
   data: {
     username: '',         // 用户名
     password: '',          // 密码
+    identity: 'student',
     showPassword: true
   },
 

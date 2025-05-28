@@ -513,23 +513,23 @@ Page({
   // 处理"再次预约"按钮点击
   onRebookClick: function(e) {
     const historyItem = e.currentTarget.dataset.item;
-
+  
     if (!historyItem || !historyItem.room_id) {
       wx.showToast({ title: '历史记录信息不完整', icon: 'none' });
       console.error('缺少room_id无法再次预约:', historyItem);
       return;
     }
-
+  
     console.log('再次预约点击，目标自习室ID:', historyItem.room_id);
-
+  
     // 关闭历史记录弹窗
     this.setData({
       showHistoryModal: false
     });
-
-    // 构建目标 URL
-    const targetUrl = `/pages/reserve/index?roomId=${historyItem.room_id}&roomName=${encodeURIComponent(historyItem.displayRoom)}`;
-
+  
+    // 构建目标 URL，添加seat_id和autoOpenSeat标志
+    const targetUrl = `/pages/reserve/index?roomId=${historyItem.room_id}&roomName=${encodeURIComponent(historyItem.displayRoom)}&seatId=${historyItem.seat_id}&autoOpenSeat=true`;
+  
     // 跳转到指定自习室的预约页面
     wx.navigateTo({
       url: targetUrl,
@@ -575,7 +575,7 @@ Page({
           // 2 - 已签到（在座）
           // 3 - 暂离
           
-          if (statusCode === 0) {
+          if (statusCode === 0 || statusCode === 4) {
             // 无预约状态
             this.setData({
               hasReservation: false,

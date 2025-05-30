@@ -89,7 +89,7 @@ onLogin: function () {
       } else {
         // Handle other status codes
         wx.showToast({
-          title: res.data.message || '登录失败',
+          title: res.data.message || '用户名或密码错误',
           icon: 'none'
         });
       }

@@ -189,13 +189,7 @@ onCloseDetails: function() {
     }
     const openTimestamp = timeStrToTimestamp(currentRoom.open_time);
     const closeTimestamp = timeStrToTimestamp(currentRoom.close_time);
-    if (openTimestamp >= closeTimestamp) {
-      wx.showToast({
-        title: '开始时间不能晚于或等于结束时间',
-        icon: 'none'
-      });
-      return;
-    }
+
     // 转换为数字类型
     const payload = {
       ...rest,
@@ -240,13 +234,6 @@ onCloseDetails: function() {
     }
     const openTimestamp = timeStrToTimestamp(currentRoom.open_time);
     const closeTimestamp = timeStrToTimestamp(currentRoom.close_time);
-    if (openTimestamp >= closeTimestamp) {
-      wx.showToast({
-        title: '开始时间不能晚于或等于结束时间',
-        icon: 'none'
-      });
-      return;
-    }
     const payload = {
       room_name:currentRoom.room_name,
       location:currentRoom.location,

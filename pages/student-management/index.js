@@ -57,9 +57,8 @@ Page({
   },
   mapType: function (typeId) {
     const map = {
-      0: '计算机学院',
-      1: '物理学院',
-      2: '电子信息学院'
+      1: '计算机学院',
+      2: '物理学院',
     };
     return map[typeId] || '未知';
   }

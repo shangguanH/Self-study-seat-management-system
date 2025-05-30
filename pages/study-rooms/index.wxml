@@ -7,7 +7,7 @@
   <view class="list">
     <block wx:for="{{studyRooms}}" wx:key="id">
       <view class="room-item" bindtap="onViewRoomDetails" data-id="{{item.room_id}}">
-        <text>{{item.room_name}} - {{item.status === 1 ? '开放' : '关闭'}}</text>
+        <text>{{item.room_name}} - {{item.status === 1 ? '开放' : '关闭'}} {{item.available_seats}} /{{item.seat_number}}</text>
       </view>
     </block>
     <view wx:if="{{!loading && studyRooms.length === 0}}"        class="empty-tip">

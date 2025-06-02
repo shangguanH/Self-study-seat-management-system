@@ -14,10 +14,29 @@ Page({
   },
 
   onLoad: function() {
+    // 获取学生所属学院信息
+    this.fetchStudentInfo();
     // 获取自习室数据
     this.fetchRooms();
   },
 
+  fetchStudentInfo: function() {
+    requestWithToken({
+      url: '/api/v1.0/student/detail',  // 假设的接口路径，需你确认
+      method: 'GET',
+      success: (res) => {
+        if (res.statusCode === 200 && res.data) {
+          const userDepartment = res.data.type; // 或 res.data.department，依据实际字段名
+          this.setData({ userDepartment });
+        } else {
+          console.log('获取学生信息失败');
+          this.handleError('无法获取学生信息');
+        }
+      },
+      fail: () => this.handleError('网络错误')
+    });
+  },
+  
   // 获取自习室数据
   fetchRooms: function() {
     this.setData({ loading: true });
@@ -114,12 +133,32 @@ Page({
 
   // 点击自习室跳转到预约页面
   onRoomClick: function(e) {
+    
     const roomIndex = e.currentTarget.dataset.index;
     const selectedRoom = this.data.filteredRooms[roomIndex];
+    //需要判断其是否有权限去预约相应的自习室
+    if (!this.checkPermission(selectedRoom.type)){
+      wx.showToast({ title: '你没有权限去预约其自习室', icon: 'none' });
+      return;
+    }
     const url = `/pages/reserve/index?roomId=${selectedRoom.room_id}`;
+
     console.log("跳转的 URL: ", url);  // 输出跳转的 URL，调试时查看
     wx.navigateTo({
       url: url,
     });
+  },
+  // 检查预约权限
+  checkPermission: function(type) {
+    // 如果自习室类型是0（通用），则所有学生都可以预约
+    if (type === 0) {
+      return true;
+    }
+    // 如果用户没有学院信息，不允许预约
+    if (!this.data.userDepartment) {
+      return false;
+    }
+    // 比较自习室类型和用户学院,这里的学生的所属院系字段的获取一下
+    return type === this.data.userDepartment;
   }
 });

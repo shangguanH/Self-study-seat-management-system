@@ -205,3 +205,67 @@ button {
   color: white;
   border: none;
 }
+
+.seats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12rpx;
+  padding: 20rpx;
+}
+
+.seat {
+  position: relative;
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #67aefc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  color: #67aefc;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+/* 状态：可用 */
+.seat.available {
+  background-color: #ffffff;
+  color: #67aefc;
+  border-color: #67aefc;
+}
+
+/* 状态：不可用 */
+.seat.unavailable {
+  background-color: #eeeeee;
+  color: #999999;
+  border-color: #cccccc;
+}
+
+/* 状态：占用中 */
+.seat.reserved {
+  background-color: #ffe5e0;
+  color: #fa541c;
+  border-color: #fa541c;
+}
+
+/* 状态：暂离 */
+.seat.temporarilyAway {
+  background-color: #fffbe6;
+  color: #faad14;
+  border-color: #faad14;
+}
+
+/* 当前选中 */
+.seat.selected {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+/* 有插座的小图标 */
+.socket-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 30rpx;
+}

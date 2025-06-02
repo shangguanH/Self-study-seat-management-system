@@ -15,6 +15,7 @@ Page({
     showSignInModal: false,     // 控制签到弹窗的显示状态
     signInCodeInput: '',        // 存储用户输入的签到码
     isReturningFromLeave: false, // 标记是否是从暂离返回（用于区分普通签到和恢复在座）
+    showSignInMethodModal: false, // 控制签到方式选择弹窗的显示状态
     
     // --- 加载状态 ---
     loading: false,             // 页面加载状态
@@ -49,13 +50,128 @@ Page({
       return;
     }
 
-    console.log('打开签到码输入弹窗');
+    console.log('打开签到方式选择弹窗');
 
-    // 打开签到模态框，并标记为普通签到
+    // 打开签到方式选择弹窗
     this.setData({
-      showSignInModal: true,
-      signInCodeInput: '', // 清空之前的输入
+      showSignInMethodModal: true,
       isReturningFromLeave: false // 标记为普通签到
+    });
+  },
+
+  // --- Sign-In Method Selection Handlers ---
+  
+  // 选择口令签到
+  selectCodeSignIn: function() {
+    this.setData({
+      showSignInMethodModal: false,
+      showSignInModal: true,
+      signInCodeInput: '' // 清空之前的输入
+    });
+  },
+  
+  // 选择扫码签到
+  selectScanSignIn: function() {
+    this.setData({
+      showSignInMethodModal: false
+    });
+    
+    // 调用微信扫码API
+    wx.scanCode({
+      success: (res) => {
+        console.log('扫码结果:', res);
+        const scanResult = res.result;
+        
+        // 确保有预约详情和座位ID
+        const userReservation = this.data.userReservationDetails;
+        if (!userReservation || !userReservation.seat_id) {
+          wx.showToast({ title: '预约信息不完整', icon: 'none' });
+          return;
+        }
+        
+        // 处理扫码签到
+        this.setData({ loading: true });
+        
+        requestWithToken({
+          url: `/api/v1.0/student/seats/${userReservation.seat_id}/checkin`,
+          method: 'POST',
+          data: {
+            code: scanResult
+          },
+          success: (res) => {
+            this.setData({ loading: false });
+            
+            if (res.statusCode === 200) {
+              // 签到成功
+              const message = this.data.isReturningFromLeave ? '已恢复在座' : '签到成功！';
+              
+              wx.showToast({
+                title: message,
+                icon: 'success',
+                duration: 2000
+              });
+              
+              // 如果是从暂离返回，清除倒计时
+              if (this.data.isReturningFromLeave && this.data.countdownTimer) {
+                clearInterval(this.data.countdownTimer);
+                this.setData({
+                  countdownTimer: null,
+                  remainingTime: 30, // 重置显示时间
+                  isReturningFromLeave: false // 重置标记
+                });
+              }
+              
+              // 重新获取最新预约状态
+              this.fetchCurrentReservation();
+            } else {
+              // 签到失败
+              let errorMsg = this.data.isReturningFromLeave ? '恢复在座失败' : '签到失败';
+              if (res.data && res.data.message) {
+                errorMsg = res.data.message;
+              } else if (res.statusCode === 400) {
+                errorMsg = '签到码错误';
+              }
+              
+              wx.showToast({
+                title: errorMsg,
+                icon: 'error',
+                duration: 2000
+              });
+              
+              // 重置返回状态标记
+              this.setData({
+                isReturningFromLeave: false
+              });
+            }
+          },
+          fail: (err) => {
+            console.error('签到请求失败:', err);
+            this.setData({ 
+              loading: false,
+              isReturningFromLeave: false // 重置标记
+            });
+            
+            wx.showToast({
+              title: '网络错误，请重试',
+              icon: 'none'
+            });
+          }
+        });
+      },
+      fail: (err) => {
+        console.error('扫码失败:', err);
+        wx.showToast({
+          title: '扫码失败，请重试',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 取消签到方式选择
+  cancelSignInMethod: function() {
+    this.setData({
+      showSignInMethodModal: false
     });
   },
 
@@ -230,10 +346,9 @@ Page({
         }
       });
     } else {
-      // 恢复在座 - 需要签到码，打开签到弹窗并标记为恢复在座操作
+      // 恢复在座 - 需要签到码，打开签到方式选择弹窗
       this.setData({
-        showSignInModal: true,
-        signInCodeInput: '', // 清空之前的输入
+        showSignInMethodModal: true,
         isReturningFromLeave: true // 标记为恢复在座操作
       });
     }
@@ -545,6 +660,7 @@ Page({
   onLoad: function(options) {
     console.log('Page onLoad');
   },
+
 
   onShow: function() {
     console.log('Page onShow');

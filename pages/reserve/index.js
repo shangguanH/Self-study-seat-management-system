@@ -758,6 +758,33 @@ Page({
     const startTimestamp = dateTimeToTimestamp(selectedDate, startTime);
     const endTimestamp = dateTimeToTimestamp(selectedDate, endTime);
 
+    // 验证预约时间是否在自习室开放时间内（使用时间戳判断）
+    const roomOpenTime = this.data.roomDetails.open_time;  // 毫秒级时间戳
+    const roomCloseTime = this.data.roomDetails.close_time; // 毫秒级时间戳
+
+    let adjustedRoomCloseTime = roomCloseTime;
+    if (roomCloseTime <= roomOpenTime) {
+      // 跨天情况，将关闭时间 +1 天（86400000 毫秒）
+      adjustedRoomCloseTime += 86400000;
+    }
+
+    // 同样处理预约结束时间如果比开始时间小，也视为跨天
+    let adjustedEndTimestamp = endTimestamp;
+    if (endTimestamp <= startTimestamp) {
+      adjustedEndTimestamp += 86400000;
+    }
+
+    if (startTimestamp < roomOpenTime || adjustedEndTimestamp > adjustedRoomCloseTime) {
+      wx.showToast({
+        title: '预约时间不在自习室开放时间范围内',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+    //验证其座位预约时间在其自习室开放时间内
+    console.log("自习室信息：");
+    console.log(this.data.roomDetails);
     // 显示加载提示
     wx.showLoading({
       title: '预约中...',

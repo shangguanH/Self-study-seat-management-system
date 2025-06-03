@@ -97,3 +97,17 @@
     </view>
   </view>
 </view>
+
+<!-- 签到方式选择弹窗 -->
+<!-- 签到方式选择弹窗 -->
+<view class="modal-mask" wx:if="{{showSignInMethodModal}}" catchtouchmove="preventTouchMove">
+  <view class="modal-dialog">
+    <view class="modal-title">请选择签到方式</view>
+    <view class="modal-footer three-buttons">
+      <view class="btn-cancel" bindtap="cancelSignInMethod">取消</view>
+      <view class="btn-confirm" bindtap="selectCodeSignIn">口令签到</view>
+      <view class="btn-confirm" bindtap="selectScanSignIn">扫码签到</view>
+    </view>
+  </view>
+</view>
+

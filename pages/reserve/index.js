@@ -61,13 +61,6 @@ function formatTimestamp(timestamp) {
   return `${year}-${month}-${day} ${hour}:${minute}`;
 }
 
-// 将日期时间字符串转换为毫秒时间戳
-function dateTimeToTimestamp(dateStr, timeStr) {
-  // 格式: YYYY-MM-DD HH:MM
-  const fullTimeStr = `${dateStr} ${timeStr}:00`;
-  return new Date(fullTimeStr).getTime();
-}
-
 // 获取自习室详情和座位状态的函数
 async function fetchRoomDetailsAndSeats(roomId) {
   try {
@@ -129,6 +122,7 @@ async function fetchRoomDetailsAndSeats(roomId) {
                         };
                       });
                     }
+                    console.log(seat.seat_id);
                     console.log(seat.ordering_list);
                     
                     return {
@@ -221,9 +215,21 @@ Page({
     minDate: currentDate,
     maxDate: threeDaysLater,
     minStartTime: currentTime,
+    endDateIsTomorrow: false, // 是否跨天预约
+    
+    // --- 最大预约时长 ---
+    maxBookingHours: 4, // 默认为4小时，可以由API更新
     
     // --- 半小时间隔时间选择器 ---
     timeOptions: [
+      "00:00", "00:30",
+      "01:00", "01:30",
+      "02:00", "02:30",
+      "03:00", "03:30",
+      "04:00", "04:30",
+      "05:00", "05:30",
+      "06:00", "06:30",
+      "07:00", "07:30",
       "08:00", "08:30", 
       "09:00", "09:30", 
       "10:00", "10:30", 
@@ -243,6 +249,7 @@ Page({
     ],
     startTimeIndex: 0,
     endTimeIndex: 1,
+    endTimeSelectIndex: 0,
     availableEndTimeOptions: [], // 可选的结束时间选项
     availableEndTimeIndices: [], // 可选结束时间对应的原索引
 
@@ -309,6 +316,21 @@ Page({
   
     // 根据roomId获取自习室详情和座位状态
     this.loadRoomData(roomId);
+
+    // 获取最大预约时长的API调用
+    requestWithToken({
+      url: '/api/v1.0/student/booking/config',
+      method: 'GET',
+      success: (res) => {
+        if (res.statusCode === 200 && res.data && res.data.maxBookingHours) {
+          this.setData({
+            maxBookingHours: res.data.maxBookingHours
+          });
+          // 更新可选结束时间，使用新的最大预约时长
+          this.updateAvailableEndTimes(this.data.startTimeIndex);
+        }
+      }
+    });
   },
 
   // --- 页面刷新 ---
@@ -453,59 +475,59 @@ Page({
   // 获取时间索引的辅助方法
   getTimeIndexByHourAndMinute: function(hour, minute) {
     // 根据小时和分钟计算timeOptions中的索引
-    const index = (hour - 8) * 2 + (minute >= 30 ? 1 : 0);
+    const index = (hour) * 2 + (minute >= 30 ? 1 : 0);
     return Math.max(0, Math.min(index, this.data.timeOptions.length - 1));
   },
   
-  // 根据开始时间更新可选结束时间 (限制最多4小时)
+  // 根据开始时间更新可选结束时间
   updateAvailableEndTimes: function(startIndex) {
     const timeOptions = this.data.timeOptions;
     const startTimeStr = timeOptions[startIndex];
+    const { maxBookingHours } = this.data;
     
     // 解析开始时间
     const [startHours, startMinutes] = startTimeStr.split(':').map(Number);
     
-    // 找出所有有效的结束时间选项和索引
+    // 找出所有有效的结束时间选项
     const validEndTimeOptions = [];
     const validEndTimeIndices = [];
     
-    // 限制最多4小时 (即最多8个半小时时间段)
-    const maxSlots = 8;
+    // 最多可预约的半小时时段数
+    const maxSlots = maxBookingHours * 2;
+    let slotsAdded = 0;
+    let endDateIsTomorrow = false;
     
-    // 确保至少有一个结束时间选项
-    const endLimit = Math.min(startIndex + maxSlots + 1, timeOptions.length);
+    // 首先添加当天的可能时间
+    for (let i = startIndex + 1; i < timeOptions.length && slotsAdded < maxSlots; i++) {
+      validEndTimeOptions.push(timeOptions[i]);
+      validEndTimeIndices.push(i);
+      slotsAdded++;
+    }
     
-    for (let i = startIndex + 1; i < endLimit; i++) {
-      const endTimeStr = timeOptions[i];
-      const [endHours, endMinutes] = endTimeStr.split(':').map(Number);
+    // 如果还可以添加更多时段且已经用完了当天所有选项，添加次日时间
+    if (slotsAdded < maxSlots) {
+      // 标记为跨天预约
+      endDateIsTomorrow = true;
       
-      // 计算时间差（小时）
-      let hourDiff = endHours - startHours;
-      if (endMinutes < startMinutes) {
-        hourDiff -= 0.5;
-      } else if (endMinutes > startMinutes) {
-        hourDiff += 0.5;
-      }
-      
-      // 只添加不超过4小时的选项
-      if (hourDiff <= 4) {
-        validEndTimeOptions.push(timeOptions[i]);
+      // 从次日的第一个时间段开始添加
+      for (let i = 0; i < timeOptions.length && slotsAdded < maxSlots; i++) {
+        validEndTimeOptions.push(`${timeOptions[i]} (次日)`);
         validEndTimeIndices.push(i);
+        slotsAdded++;
       }
     }
     
-    // 如果当前选择的结束时间超过有效范围，重新设置为最后一个有效值
-    let newEndTimeIndex = this.data.endTimeIndex;
-    if (!validEndTimeIndices.includes(newEndTimeIndex)) {
-      newEndTimeIndex = validEndTimeIndices[validEndTimeIndices.length - 1] || (startIndex + 1);
-    }
+    // 如果当前选择的结束时间已不在有效范围内，重置为第一个有效选项
+    const newEndTimeIndex = validEndTimeIndices[0] || (startIndex + 1);
     
     // 更新数据
     this.setData({
       availableEndTimeOptions: validEndTimeOptions,
       availableEndTimeIndices: validEndTimeIndices,
       endTimeIndex: newEndTimeIndex,
-      endTime: timeOptions[newEndTimeIndex]
+      endTime: timeOptions[newEndTimeIndex],
+      endDateIsTomorrow: endDateIsTomorrow,
+      endTimeSelectIndex: 0
     });
   },
   
@@ -535,7 +557,7 @@ Page({
   // 生成时间轴数据
   generateTimelineData: function(seat) {
     // 创建时间轴数组 (8:00-22:30, 每半小时一格, 共29格)
-    const timelineData = new Array(29).fill('available');
+    const timelineData = new Array(48).fill('available');
     
     // 如果有预约记录，更新时间轴
     if (seat.ordering_list && seat.ordering_list.length > 0) {
@@ -543,6 +565,9 @@ Page({
       today.setHours(0, 0, 0, 0);
       
       seat.ordering_list.forEach(order => {
+        // 跳过已取消的预约（booking_status === 4）
+        if (order.booking_status === 4) return;
+        
         // 解析订单开始和结束时间
         const startDateTime = order.formattedStartTime ? new Date(order.formattedStartTime.replace(' ', 'T')) : null;
         const endDateTime = order.formattedEndTime ? new Date(order.formattedEndTime.replace(' ', 'T')) : null;
@@ -555,8 +580,8 @@ Page({
         
         if (orderDate.getTime() === today.getTime()) {
           // 转换为时间轴索引 (8:00为索引0)
-          const startIndex = Math.max(0, (startDateTime.getHours() - 8) * 2 + (startDateTime.getMinutes() >= 30 ? 1 : 0));
-          const endIndex = Math.min(28, (endDateTime.getHours() - 8) * 2 + (endDateTime.getMinutes() > 0 ? 1 : 0));
+          const startIndex = Math.max(0, (startDateTime.getHours()) * 2 + (startDateTime.getMinutes() >= 30 ? 1 : 0));
+          const endIndex = Math.min(47, (endDateTime.getHours()) * 2 + (endDateTime.getMinutes() > 0 ? 1 : 0));
           
           // 更新时间轴状态
           for (let i = startIndex; i < endIndex; i++) {
@@ -626,9 +651,7 @@ Page({
       // 打开模态框时重置时间选择为默认值
       selectedDate: currentDate,
       startTimeIndex: currentIndex,
-      endTimeIndex: Math.min(currentIndex + 1, this.data.timeOptions.length - 1),
-      startTime: this.data.timeOptions[currentIndex],
-      endTime: this.data.timeOptions[Math.min(currentIndex + 1, this.data.timeOptions.length - 1)]
+      startTime: this.data.timeOptions[currentIndex]
     });
     
     // 更新可选结束时间
@@ -666,9 +689,7 @@ Page({
       
       this.setData({
         startTimeIndex: currentIndex,
-        endTimeIndex: Math.max(this.data.endTimeIndex, currentIndex + 1),
-        startTime: this.data.timeOptions[currentIndex],
-        endTime: this.data.timeOptions[Math.max(this.data.endTimeIndex, currentIndex + 1)]
+        startTime: this.data.timeOptions[currentIndex]
       });
       
       // 更新可选结束时间
@@ -680,7 +701,7 @@ Page({
     const index = parseInt(e.detail.value);
     const startTime = this.data.timeOptions[index];
     
-    // 更新可选结束时间（不超过4小时）
+    // 更新可选结束时间
     this.updateAvailableEndTimes(index);
     
     this.setData({
@@ -690,14 +711,19 @@ Page({
   },
 
   bindEndTimeChange: function(e) {
-    // 这里的e.detail.value是availableEndTimeOptions中的索引
     const selectedIndex = parseInt(e.detail.value);
+    const selectedOption = this.data.availableEndTimeOptions[selectedIndex];
     const endTimeIndex = this.data.availableEndTimeIndices[selectedIndex];
-    const endTime = this.data.timeOptions[endTimeIndex];
     
+    // 检查是否是次日选项
+    const endDateIsTomorrow = selectedOption.includes('(次日)');
+    
+    // 更新UI
     this.setData({
       endTimeIndex: endTimeIndex,
-      endTime: endTime
+      endTime: this.data.timeOptions[endTimeIndex],
+      endDateIsTomorrow: endDateIsTomorrow,
+      endTimeSelectIndex: selectedIndex // 新增这行
     });
   },
 
@@ -717,80 +743,59 @@ Page({
     }
   },
 
+  // 将日期时间字符串转换为毫秒时间戳
+  dateTimeToTimestamp: function(dateStr, timeStr, isNextDay = false) {
+    // 创建日期对象
+    const dateParts = dateStr.split('-').map(Number);
+    const timeParts = timeStr.split(':').map(Number);
+    
+    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1], 0, 0);
+    
+    // 如果是次日，加上24小时
+    if (isNextDay) {
+      date.setDate(date.getDate() + 1);
+    }
+    
+    return date.getTime();
+  },
+
   // 从选择模态框确认预约
   confirmReservation: function() {
-    const { selectedSeatIndex, selectedDate, startTime, endTime, seats } = this.data;
-
-    // 基本验证
-    if (selectedSeatIndex === null || !selectedDate || !startTime || !endTime) {
-        wx.showToast({ title: '请选择完整的预约信息', icon: 'none' });
-        return;
-    }
-    if (startTime >= endTime) {
-        wx.showToast({ title: '结束时间必须晚于开始时间', icon: 'none' });
-        return;
-    }
-
-    // 验证预约时长是否超过4小时
-    const startParts = startTime.split(':').map(Number);
-    const endParts = endTime.split(':').map(Number);
-    const startTotalMinutes = startParts[0] * 60 + startParts[1];
-    const endTotalMinutes = endParts[0] * 60 + endParts[1];
-    const durationHours = (endTotalMinutes - startTotalMinutes) / 60;
+    const { selectedSeatIndex, selectedDate, timeOptions, startTimeIndex, endTimeIndex, seats, endDateIsTomorrow } = this.data;
     
-    if (durationHours > 4) {
-        wx.showToast({ title: '预约时间不能超过4小时', icon: 'none' });
-        return;
+    // 基本验证
+    if (selectedSeatIndex === null || !selectedDate) {
+      wx.showToast({ title: '请选择完整的预约信息', icon: 'none' });
+      return;
     }
-
+    
+    const startTime = timeOptions[startTimeIndex];
+    const endTime = timeOptions[endTimeIndex];
+    
     const selectedSeat = seats[selectedSeatIndex];
-    if (!selectedSeat || selectedSeat.status == 'unavailable') {
-         wx.showToast({ title: '该座位已被预约或无效', icon: 'none' });
-         this.setData({ 
-           showReservationModal: false,
-           showSeatDetailModal: false,
-           selectedSeatIndex: null 
-         });
-         return;
-    }
-
-    // 转换为毫秒时间戳
-    const startTimestamp = dateTimeToTimestamp(selectedDate, startTime);
-    const endTimestamp = dateTimeToTimestamp(selectedDate, endTime);
-
-    // 验证预约时间是否在自习室开放时间内（使用时间戳判断）
-    const roomOpenTime = this.data.roomDetails.open_time;  // 毫秒级时间戳
-    const roomCloseTime = this.data.roomDetails.close_time; // 毫秒级时间戳
-
-    let adjustedRoomCloseTime = roomCloseTime;
-    if (roomCloseTime <= roomOpenTime) {
-      // 跨天情况，将关闭时间 +1 天（86400000 毫秒）
-      adjustedRoomCloseTime += 86400000;
-    }
-
-    // 同样处理预约结束时间如果比开始时间小，也视为跨天
-    let adjustedEndTimestamp = endTimestamp;
-    if (endTimestamp <= startTimestamp) {
-      adjustedEndTimestamp += 86400000;
-    }
-
-    if (startTimestamp < roomOpenTime || adjustedEndTimestamp > adjustedRoomCloseTime) {
-      wx.showToast({
-        title: '预约时间不在自习室开放时间范围内',
-        icon: 'none',
-        duration: 2000
+    if (!selectedSeat || selectedSeat.status === 'unavailable' || selectedSeat.status === 'reserved') {
+      wx.showToast({ title: '该座位已被预约或无效', icon: 'none' });
+      this.setData({ 
+        showReservationModal: false,
+        showSeatDetailModal: false,
+        selectedSeatIndex: null 
       });
       return;
     }
-    //验证其座位预约时间在其自习室开放时间内
-    console.log("自习室信息：");
-    console.log(this.data.roomDetails);
+    
+    // 转换为毫秒时间戳，考虑跨天情况
+    const startTimestamp = this.dateTimeToTimestamp(selectedDate, startTime, false);
+    const endTimestamp = this.dateTimeToTimestamp(selectedDate, endTime, endDateIsTomorrow);
+    // console.log(startTime);
+    // console.log(endTime);
+    // console.log(startTimestamp);
+    // console.log(endTimestamp);
     // 显示加载提示
     wx.showLoading({
-      title: '预约中...',
+      title: '提交预约中...',
       mask: true
     });
-
+    
     // 调用预约API
     requestWithToken({
       url: '/api/v1.0/student/seats/book',
@@ -834,7 +839,7 @@ Page({
             icon: 'none',
             duration: 2500
           });
-        }else if(res.statusCode === 401){
+        } else if(res.statusCode === 401){
           wx.showToast({
             title: `该自习室为专用自习室，您无法预约`,
             icon: 'none',
@@ -875,59 +880,57 @@ Page({
 
   // 确认取消预约
   confirmCancellation: function() {
-    const { seatIndexToCancel, seats, userSeatId } = this.data;
-    if (seatIndexToCancel === null || !userSeatId) return;
-
-    const seat = seats[seatIndexToCancel];
-    if (!seat || seat.status !== 'userReserved') {
-      wx.showToast({ 
-        title: '无法取消：座位状态已改变', 
-        icon: 'none' 
+    const { userSeatId, seatIndexToCancel, seats } = this.data;
+    
+    if (seatIndexToCancel === null || userSeatId === null) {
+      wx.showToast({
+        title: '无法取消，未找到预约信息',
+        icon: 'none'
       });
-      this.closeCancelModal();
       return;
     }
-
+    
     // 显示加载提示
     wx.showLoading({
       title: '取消预约中...',
       mask: true
     });
-
+    
     // 调用取消预约API
     requestWithToken({
-      url: `/api/v1.0/student/seats/${userSeatId}/release`,
+      url: '/api/v1.0/student/seats/cancel',
       method: 'POST',
+      data: {
+        seat_id: userSeatId
+      },
       success: (res) => {
         wx.hideLoading();
         
         if (res.statusCode === 200) {
           // 取消成功
           wx.showToast({
-            title: '预约已取消',
+            title: '预约已成功取消',
             icon: 'success',
             duration: 2000
           });
           
-          // 关闭所有模态框并刷新数据
+          // 关闭模态框并刷新数据
           this.setData({
             showCancelModal: false,
-            showSeatDetailModal: false,
             cancelModalMessage: '',
-            seatIndexToCancel: null,
-            seatDetailInfo: null
+            seatIndexToCancel: null
           });
           
-          // 重新加载自习室数据以获取最新的座位状态
+          // 重新加载自习室数据以获取最新状态
           this.loadRoomData(this.data.roomId);
           
         } else {
-          // 取消失败
-          console.error('取消预约API调用失败:', res.statusCode, res.data);
+          // 失败处理
           let errorMessage = '取消预约失败';
           if (res.data && res.data.message) {
             errorMessage = res.data.message;
           }
+          
           wx.showToast({
             title: errorMessage,
             icon: 'none',
@@ -937,7 +940,7 @@ Page({
       },
       fail: (error) => {
         wx.hideLoading();
-        console.error('取消预约API请求失败:', error);
+        console.error('取消预约请求失败:', error);
         wx.showToast({
           title: '网络错误，请重试',
           icon: 'none',
@@ -946,22 +949,22 @@ Page({
       }
     });
   },
-
-  // 取消取消操作（关闭模态框并返回座位详情）
+  
+  // 取消取消预约操作
   cancelCancellationAction: function() {
-    const seatIndex = this.data.seatIndexToCancel;
-    
-    // 关闭取消模态框
+    // 关闭取消确认模态框
     this.setData({
       showCancelModal: false,
       cancelModalMessage: '',
       seatIndexToCancel: null
     });
     
-    // 如果有有效座位索引，重新打开座位详情
+    // 重新打开座位详情
+    const seatIndex = this.data.userSeatIndex;
     if (seatIndex !== null && this.data.seats[seatIndex]) {
       const seat = this.data.seats[seatIndex];
       this.showSeatDetails(seatIndex, seat);
     }
-  },
+  }
 });
+

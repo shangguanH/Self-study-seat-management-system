@@ -3,6 +3,7 @@ Page({
   data: {
     minSeatCount: '', // 最小座位数筛选值
     selectedType: -1, // 选择的自习室类型 (-1表示全部)
+    hasSocket: false, // 是否有插座的筛选条件
     typeOptions: [
       { id: -1, name: '全部类型' },
       { id: 0, name: '通用' },
@@ -110,6 +111,13 @@ Page({
     this.setData({ selectedType }, this.filterRooms);
   },
 
+  // 处理插座筛选
+  onSocketFilterChange: function(e) {
+    this.setData({
+      hasSocket: e.detail.value
+    }, this.filterRooms);
+  },
+
   // 筛选自习室
   filterRooms: function() {
     let filteredRooms = this.data.rooms;
@@ -120,9 +128,13 @@ Page({
     }
 
     // 根据自习室类型进行筛选
-    if (this.data.selectedType !== 0) {
-      console.log(this.data.selectedType);
-      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType - 1);
+    if (this.data.selectedType !== -1) {
+      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType);
+    }
+
+    // 根据是否有插座进行筛选
+    if (this.data.hasSocket) {
+      filteredRooms = filteredRooms.filter(room => room.has_socket === true);
     }
 
     // 更新筛选后的自习室列表
@@ -148,6 +160,7 @@ Page({
       url: url,
     });
   },
+  
   // 检查预约权限
   checkPermission: function(type) {
     // 如果自习室类型是0（通用），则所有学生都可以预约

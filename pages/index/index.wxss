@@ -1,3 +1,4 @@
+
 /* 页面容器样式 */
 .container {
   display: flex;
@@ -331,3 +332,59 @@
 
 /* === END: Modal Styles === */
 
+/* If you don't already have these modal styles */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-dialog {
+  width: 80%;
+  max-width: 300px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modal-title {
+  padding: 15px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-footer {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+
+/* Button styles for the sign-in method modal - adjust if needed */
+.btn-cancel {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  border-right: 1px solid #eee;
+}
+
+.btn-confirm {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  color: #07c160;
+}
+
+/* Add this style specifically for the three-button layout */
+.modal-footer.three-buttons .btn-cancel,
+.modal-footer.three-buttons .btn-confirm {
+  flex: 1;
+  font-size: 14px;
+}

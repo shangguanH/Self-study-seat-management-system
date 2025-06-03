@@ -127,9 +127,12 @@
 }
 
 .room-tags {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 10rpx;
+  display: inline-block;
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
 }
 
 .tag {

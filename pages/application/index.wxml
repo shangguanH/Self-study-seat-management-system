@@ -18,6 +18,12 @@
         </view>
       </picker>
     </view>
+    
+    <!-- 插座筛选 -->
+    <view class="filter-item">
+      <text class="filter-label">只看有插座：</text>
+      <switch bindchange="onSocketFilterChange" checked="{{hasSocket}}" />
+    </view>
   </view>
   
   <!-- 自习室列表 -->
@@ -43,10 +49,9 @@
           </view>
           
           <view class="room-tags">
-            <text class="tag type-tag type-{{item.type}}">
-              {{item.type === 0 ? '通用' : item.type === 1 ? '计算机学院' : '物理学院'}}
-            </text>
+            <text class="tag type-tag type-{{item.type}}">{{item.type === 0 ? '通用' : item.type === 1 ? '计算机学院' : '物理学院'}}</text>
             <text class="tag status-tag status-{{item.status}}">{{item.status === 1 ? '开放中' : '已关闭'}}</text>
+            <text class="tag socket-tag" wx:if="{{item.has_socket}}">有插座</text>
           </view>
         </view>
         

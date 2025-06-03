@@ -28,6 +28,13 @@
   align-items: center;
 }
 
+.input-group text {
+  display: inline-block;
+  width: 80px; /* 固定宽度 */
+  text-align: right;
+  padding-right: 10px;
+}
+
 .input-field {
   /* width: 100%;
   padding: 10px;

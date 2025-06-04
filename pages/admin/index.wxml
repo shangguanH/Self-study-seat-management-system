@@ -3,6 +3,6 @@
   <view class="content">
     <view class="item" bindtap="onUserManagement">用户管理</view>
     <view class="item" bindtap="onSeatManagement">座位管理</view>
-    <view class="item">系统设置</view>
+    <view class="item" bindtap="onSystemSettings">系统设置</view>
   </view>
 </view>

@@ -1,0 +1,15 @@
+<!-- pages/system-setting/system-setting.wxml -->
+<view class="container">
+  <view class="setting-item">
+    <text class="label">最长预约时间：</text>
+    <input 
+      type="number" 
+      value="{{maxBookingHours}}" 
+      bindinput="onInputChange"
+      placeholder="请输入小时数"
+      class="input"
+    />
+    <text class="unit">小时</text>
+  </view>
+  <button type="primary" bindtap="saveSettings" class="save-btn">保存设置</button>
+</view>

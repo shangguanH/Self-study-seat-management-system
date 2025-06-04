@@ -11,7 +11,8 @@
     "pages/admin/index",
     "pages/study-rooms/index",
     "pages/seats-management/index",
-    "pages/student-management/index"
+    "pages/student-management/index",
+    "pages/system-management/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

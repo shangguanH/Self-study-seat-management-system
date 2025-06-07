@@ -143,6 +143,7 @@ onStatusChange: function(e) {
                 wx.showToast({ title: '删除成功', icon: 'success' });
                 this.setData({ showSeatModal: false });
                 this.loadSeatsByRoomId(roomId);
+                this.updateLastPage();
               } else {
                 wx.showToast({ title: '删除失败', icon: 'none' });
               }
@@ -192,6 +193,7 @@ onStatusChange: function(e) {
           wx.showToast({ title: '添加成功', icon: 'success' });
           this.setData({ showSeatModal: false });
           this.loadSeatsByRoomId(roomId);
+          this.updateLastPage();
         } else {
           wx.showToast({ title: '添加失败', icon: 'none' });
         }
@@ -217,6 +219,7 @@ onStatusChange: function(e) {
           wx.showToast({ title: '修改成功', icon: 'success' });
           this.setData({ showSeatModal: false });
           this.loadSeatsByRoomId(roomId);
+          this.updateLastPage();
         } else {
           wx.showToast({ title: '修改失败', icon: 'none' });
         }
@@ -272,41 +275,46 @@ onStatusChange: function(e) {
   },
 
   // 确认一键添加
-onConfirmBatchAdd() {
-  const { roomId} = this.data;
-  const { prefix, count } = this.data.batchForm;
-  if (!prefix || !count || parseInt(count) <= 0) {
-    wx.showToast({ title: '请输入有效的前缀和数量', icon: 'none' });
-    return;
-  }
-  if (this.data.studyroom.seat_number + parseInt(count) > this.data.studyroom.capacity){
-    wx.showToast({ title: '添加座位数目不能大于座位最大容量', icon: 'none' });
-    return;
-  }
-  for(let i = 1;i <= parseInt(count); i++) {
-    console.log(roomId);
-    requestWithToken({
-      url: `/api/v1.0/admin/seats`,
-      method: 'POST',
-      data: {
-        room_id: roomId,
-        seat_name: prefix + i,
-        has_socket: 0,
-      },
-      success: (res) => {
-        if (res.statusCode === 201) {
-          wx.showToast({ title: '添加成功', icon: 'success' });
-        } else {
-          wx.showToast({ title: '添加失败', icon: 'none' });
+  onConfirmBatchAdd() {
+    const { roomId} = this.data;
+    const { prefix, count } = this.data.batchForm;
+    if (!prefix || !count || parseInt(count) <= 0) {
+      wx.showToast({ title: '请输入有效的前缀和数量', icon: 'none' });
+      return;
+    }
+    if (this.data.studyroom.seat_number + parseInt(count) > this.data.studyroom.capacity){
+      wx.showToast({ title: '添加座位数目不能大于座位最大容量', icon: 'none' });
+      return;
+    }
+    for(let i = 1;i <= parseInt(count); i++) {
+      console.log(roomId);
+      requestWithToken({
+        url: `/api/v1.0/admin/seats`,
+        method: 'POST',
+        data: {
+          room_id: roomId,
+          seat_name: prefix + i,
+          has_socket: 0,
+        },
+        success: (res) => {
+          if (res.statusCode === 201) {
+            wx.showToast({ title: '添加成功', icon: 'success' });
+          } else {
+            wx.showToast({ title: '添加失败', icon: 'none' });
+          }
+        },
+        fail: () => {
+          wx.showToast({ title: '请求失败', icon: 'none' });
         }
-      },
-      fail: () => {
-        wx.showToast({ title: '请求失败', icon: 'none' });
-      }
-    });
-    this.setData({ showBatchModal: false });
-    this.loadSeatsByRoomId(roomId);
-  }
-
+      });
+      this.setData({ showBatchModal: false });
+      this.loadSeatsByRoomId(roomId);
+    }
+    this.updateLastPage();
+    },
+  updateLastPage() {
+    let pages = getCurrentPages();
+    let prev = pages[pages.length - 2];
+    prev.loadStudyRooms();
   }
 });

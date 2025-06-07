@@ -1,0 +1,43 @@
+/* pages/system-setting/system-setting.wxss */
+.container {
+  padding: 20rpx;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.label {
+  font-size: 32rpx;
+  color: #333;
+  flex: none;
+}
+
+.input {
+  width: 120rpx;
+  text-align: center;
+  font-size: 32rpx;
+  border: 2rpx solid #eee;
+  border-radius: 8rpx;
+  padding: 10rpx 16rpx;
+  margin: 0 15rpx;
+}
+
+.unit {
+  font-size: 32rpx;
+  color: #666;
+}
+
+.save-btn {
+  width: 80%;
+  margin: 50rpx auto 0;
+  border-radius: 50rpx;
+  font-size: 34rpx;
+  background: #07c160;
+}

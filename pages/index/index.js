@@ -82,6 +82,13 @@ Page({
         console.log('扫码结果:', res);
         const scanResult = res.result;
         
+        if (scanResult !== "12345678") {
+          wx.showToast({ 
+            title: '无效的二维码', 
+            icon: 'none' 
+          });
+          return;
+        }
         // 确保有预约详情和座位ID
         const userReservation = this.data.userReservationDetails;
         if (!userReservation || !userReservation.seat_id) {
@@ -199,6 +206,11 @@ Page({
     // 验证输入
     if (!enteredCode) {
       wx.showToast({ title: '请输入签到码', icon: 'none' });
+      return;
+    }
+
+    if (enteredCode !== "12345678") {
+      wx.showToast({ title: '签到码错误', icon: 'none' });
       return;
     }
 

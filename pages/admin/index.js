@@ -24,7 +24,7 @@ Page({
   onSystemSettings: function () {
     // 跳转到系统设置页面
     wx.navigateTo({
-      url: '/pages/admin/system-settings',
+      url: '/pages/system-management/index',
     });
   }
 });

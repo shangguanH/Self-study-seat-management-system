@@ -1,4 +1,3 @@
-const { TEST_URL } = require('../../utils/config');
 const { requestWithToken } = require('../../utils/request');
 //显示座位有多少是可用的
 //时间戳和字符串之间的转换
@@ -12,8 +11,7 @@ function timeStrToTimestamp(timeStr) {
 function timestampToTimeStr(timestamp) {
   const date = new Date(timestamp);
   const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+  return `${hours}:00`;
 }
 
 
@@ -63,7 +61,6 @@ Page({
     for (let h = 0; h < 24; h++) {
       const hour = h.toString().padStart(2, '0');
       options.push(`${hour}:00`);
-      options.push(`${hour}:30`);
     }
     this.setData({ timeOptions: options });
   },
@@ -269,6 +266,7 @@ onCloseDetails: function() {
       url: '/pages/seats-management/index?roomid=' + roomId
       // url: '/pages/seats-management/index'
     });
+    this.setData({showModal:false});
   },
 
   // 删除自习室

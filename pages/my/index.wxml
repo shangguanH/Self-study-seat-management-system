@@ -1,33 +1,42 @@
+<!-- student_detail.wxml -->
 <view class="container">
-  <!-- 用户信息区域 -->
-  <view class="user-info">
-    <text class="info-title">学工号:</text>
-    <text class="info-content">{{studentId}}</text>
-
-    <view class="info-row">
-      <text class="info-title">用户名:</text>
-      <text class="info-content">{{userInfo.username}}</text>
+  <view class="header">
+    <view class="avatar-wrapper">
+      <open-data type="userAvatarUrl" class="avatar"></open-data>
     </view>
-
-    <view class="info-row">
-      <text class="info-title">邮箱:</text>
-      <text class="info-content">{{userInfo.email}}</text>
+    <text class="username">{{userInfo.username}}</text>
+  </view>
+  
+  <view class="info-card">
+    <view class="info-item">
+      <text class="label">学工号:</text>
+      <text class="value">{{userInfo.student_id}}</text>
     </view>
-
-    <view class="info-row">
-      <text class="info-title">手机号:</text>
-      <text class="info-content">{{userInfo.phone}}</text>
+    <view class="info-item">
+      <text class="label">姓名:</text>
+      <text class="value">{{userInfo.username}}</text>
     </view>
-    <view>
-  <!-- 其他内容 -->
-  <button bindtap="logout">退出登录</button>
-</view>
+    <view class="info-item">
+      <text class="label">邮箱:</text>
+      <text class="value">{{userInfo.email}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">电话:</text>
+      <text class="value">{{userInfo.phone}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">院系:</text>
+      <text class="value">{{typeMap[userInfo.type] || '未知院系'}}</text>
+    </view>
+  </view>
+  
+  <view class="button-area">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
   </view>
 
   <!-- 底部导航栏 -->
   <view class="nav-bar">
-    <navigator class="nav-item" url="/pages/index/index?studentId={{studentId}}">首页</navigator>
-    <navigator class="nav-item" url="/pages/my/index?studentId={{studentId}}">我的</navigator>
+    <navigator class="nav-item" url="/pages/index/index?studentId={{userInfo.student_id}}">首页</navigator>
+    <navigator class="nav-item" url="/pages/my/index?studentId={{userInfo.student_id}}">我的</navigator>
   </view>
 </view>
-

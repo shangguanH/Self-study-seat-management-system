@@ -122,8 +122,8 @@ async function fetchRoomDetailsAndSeats(roomId) {
                         };
                       });
                     }
-                    console.log(seat.seat_id);
-                    console.log(seat.ordering_list);
+                    // console.log(seat.seat_id);
+                    // console.log(seat.ordering_list);
                     
                     return {
                       id: seat.seat_id || index,
@@ -319,12 +319,12 @@ Page({
 
     // 获取最大预约时长的API调用
     requestWithToken({
-      url: '/api/v1.0/student/booking/config',
+      url: '/api/v1.0/admin/system',
       method: 'GET',
       success: (res) => {
-        if (res.statusCode === 200 && res.data && res.data.maxBookingHours) {
+        if (res.statusCode === 200 && res.data && res.data.max_booking_time) {
           this.setData({
-            maxBookingHours: res.data.maxBookingHours
+            maxBookingHours: res.data.max_booking_time
           });
           // 更新可选结束时间，使用新的最大预约时长
           this.updateAvailableEndTimes(this.data.startTimeIndex);

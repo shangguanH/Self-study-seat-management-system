@@ -128,8 +128,8 @@ Page({
     }
 
     // 根据自习室类型进行筛选
-    if (this.data.selectedType !== -1) {
-      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType);
+    if (this.data.selectedType !== 0) {
+      filteredRooms = filteredRooms.filter(room => room.type === this.data.selectedType-1);
     }
 
     // 根据是否有插座进行筛选

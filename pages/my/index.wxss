@@ -1,59 +1,110 @@
-/* 页面整体布局 */
+/* student_detail.wxss */
 .container {
-  padding: 20px;
-  background-color: #f9f9f9;
+  padding: 20rpx;
+  background-color: #f6f6f6;
   min-height: 100vh;
-}
-
-/* 用户信息区域 */
-.user-info {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-}
-
-.info-title {
-  font-size: 16px;
-  color: #333;
-  font-weight: bold;
-}
-
-.info-content {
-  font-size: 16px;
-  color: #555;
-  margin-left: 10px;
-}
-
-.info-row {
   display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 100rpx; /* 为底部导航留出空间 */
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 15px;
+  padding: 40rpx 0;
 }
 
-/* 底部导航栏 */
-.nav-bar {
+.avatar-wrapper {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 80rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  border: 4rpx solid #fff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.username {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.info-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin: 20rpx 0;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.info-item {
   display: flex;
-  justify-content: space-around;
-  width: 100%;  /* Ensure the navbar spans the full width of the screen */
-  padding: 10px 0;  /* Adjust the padding to ensure it's not too wide */
-  background-color: #2d8cf0;
-  border-radius: 10px 10px 0 0;  /* Rounded corners on top, not the bottom */
-  position: fixed;  /* Keep it at the bottom of the screen */
+  padding: 20rpx 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  width: 160rpx;
+  color: #666;
+  font-size: 28rpx;
+}
+
+.value {
+  flex: 1;
+  color: #333;
+  font-size: 28rpx;
+}
+
+.button-area {
+  margin-top: 90rpx;
+  padding: 0 30rpx;
+}
+
+.logout-btn {
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 8rpx;
+  margin-bottom: 200rpx;
+}
+
+.logout-btn:active {
+  background-color: #ff7875;
+}
+
+/* 底部导航样式 */
+.nav-bar {
+  position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;
+  height: 100rpx;
+  background-color: #fff;
+  display: flex;
+  border-top: 1rpx solid #eee;
 }
 
 .nav-item {
-  font-size: 16px;
-  color: white;
-  text-decoration: none;
-  padding: 10px 15px;
-  border-radius: 5px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28rpx;
+  color: #333;
 }
 
-.nav-item:hover {
-  background-color: #1a6db3;
-  transition: background-color 0.3s;
+.nav-item:first-child {
+  border-right: 1rpx solid #eee;
 }

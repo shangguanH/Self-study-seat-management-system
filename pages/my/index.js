@@ -1,35 +1,60 @@
+const { requestWithToken } = require('../../utils/request');
 Page({
   data: {
-    studentId: '',  // 学工号
     userInfo: {
+      student_id: '',
       username: '',
       email: '',
-      phone: ''
+      phone: '',
+      type: ''
+    },
+    typeMap: {
+      1: '计算机科学与技术'
     }
   },
 
   onLoad: function (options) {
-    const studentId = options.studentId;
-    this.setData({
-      studentId: studentId
-    });
-    this.getUserInfo(studentId);
+    this.getStudentDetail();
   },
 
-  getUserInfo: function (studentId) {
-    const userInfo = {
-      username: `用户${studentId}`,
-      email: `${studentId}@example.com`,
-      phone: `1380000${studentId}`
-    };
-    this.setData({
-      userInfo: userInfo
+  getStudentDetail: function () {
+    requestWithToken({
+      url: '/api/v1.0/student/detail',
+      method: 'GET',
+      success: (res) => {
+        
+        if (res.statusCode === 200 && res.data) {
+          console.log(res.data);
+          this.setData({
+            userInfo: res.data
+          });
+        } else {
+          wx.showToast({
+            title: '获取信息失败',
+            icon: 'none'
+          });
+        }
+      },
+      fail: () => {
+        wx.showToast({
+          title: '网络请求失败',
+          icon: 'none'
+        });
+      }
     });
   },
 
   logout: function () {
-    wx.redirectTo({
-      url: '/pages/home/index'
+    wx.showModal({
+      title: '提示',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          wx.redirectTo({
+            url: '/pages/home/index'
+          });
+        }
+      }
     });
   }
 });
